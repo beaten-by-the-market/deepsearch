@@ -1,5 +1,5 @@
 pandas
-streamlit
+streamlit>=1.32.0
 requests
 psycopg2-binary
 tqdm
@@ -7,3 +7,4 @@ numpy
 python-dotenv
 openpyxl
 plotly
+altair>=5.0.0
