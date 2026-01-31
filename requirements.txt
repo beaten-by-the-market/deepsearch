@@ -1,0 +1,9 @@
+pandas
+streamlit
+requests
+psycopg2-binary
+tqdm
+numpy
+python-dotenv
+openpyxl
+plotly

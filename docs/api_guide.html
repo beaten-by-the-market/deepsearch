@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSearch API 가이드 - KRX 실무 활용</title>
+    <style>
+        :root {
+            --primary: #1f77b4;
+            --secondary: #ff7f0e;
+            --success: #2ca02c;
+            --danger: #d62728;
+            --warning: #ffbb00;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--dark);
+            margin-top: 1.5em;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--light);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        p code, li code, td code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #c7254e;
+            font-size: 0.9em;
+        }
+
+        /* Alert boxes */
+        .info-box, .warning-box, .success-box, .danger-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid var(--info);
+        }
+
+        .warning-box {
+            background: #fff8e6;
+            border-left: 4px solid var(--warning);
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+        }
+
+        .danger-box {
+            background: #ffebee;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Comparison cards */
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h4 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .card.securities { border-top: 4px solid var(--success); }
+        .card.entities { border-top: 4px solid var(--info); }
+        .card.named-entities { border-top: 4px solid var(--warning); }
+
+        /* Collapsible sections */
+        details {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            background: var(--light);
+            font-weight: 600;
+        }
+
+        summary:hover {
+            background: #eee;
+        }
+
+        details > div {
+            padding: 15px;
+        }
+
+        /* Diagram boxes */
+        .diagram-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram-box h4 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.1em;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .flow-step {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .flow-step.highlight {
+            background: var(--primary);
+            color: white;
+        }
+
+        .flow-step.api {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .flow-step.filter {
+            background: #fff3e0;
+            border-color: #ff9800;
+        }
+
+        .flow-step.result {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .flow-step.llm {
+            background: #f3e5f5;
+            border-color: #9c27b0;
+        }
+
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #666;
+        }
+
+        /* Use case boxes */
+        .use-case-box {
+            background: #fff;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .use-case-box h4 {
+            margin-top: 0;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .use-case-box h4::before {
+            content: "💡";
+        }
+
+        .use-case-highlight {
+            background: #fffde7;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Scenario cards */
+        .scenario-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin: 25px 0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .scenario-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #2196f3 100%);
+            color: white;
+            padding: 15px 20px;
+        }
+
+        .scenario-header h4 {
+            margin: 0;
+            color: white;
+        }
+
+        .scenario-body {
+            padding: 20px;
+        }
+
+        .scenario-purpose {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* Section TOC */
+        .section-toc {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 15px 0 25px 0;
+            font-size: 0.9em;
+        }
+
+        .section-toc-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+
+        .section-toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+        }
+
+        .section-toc li {
+            margin: 0;
+        }
+
+        .section-toc a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .section-toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-diagram {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>DeepSearch Document API 가이드</h1>
+<p style="color: #666; font-size: 0.9em; margin-top: -5px; margin-bottom: 20px;">※본 가이드는 DeepSearch의 공식문서가 아니며, 정재광 과장이 DeepSearch API 문서를 참고하여 작성한 활용사례입니다.</p>
+
+<nav>
+    <ul>
+        <li><a href="#overview">1. 개요</a></li>
+        <li><a href="#parameters">2. 호출 파라미터 및 응답 필드</a></li>
+        <li><a href="#comparison">3. 상장사 검색 필드 이해 - KRX 핵심</a></li>
+        <li><a href="#krx-practice">4. KRX 실무활용예시</a></li>
+        <li><a href="#llm">5. LLM을 연계한 KRX 실무활용예시</a></li>
+    </ul>
+</nav>
+
+<div class="info-box">
+    <strong>이 가이드의 목적</strong><br>
+    한국거래소(KRX) 직원의 업무를 위해 작성되었습니다.<br><br>
+    <strong>주요 관심사:</strong>
+    <ul>
+        <li>뉴스 모니터링: 상장사 관련 뉴스 실시간 추적</li>
+        <li>공시 의무 판단: 주요 경영사항 발생 여부 확인</li>
+        <li>주가 변동 분석: 특정 뉴스와 주가 변동 상관관계 파악</li>
+    </ul>
+</div>
+
+<!-- Section 1: Overview -->
+<section id="overview">
+<h2>1. 개요</h2>
+
+<h3>DeepSearch 문서 카테고리</h3>
+
+<table>
+    <tr>
+        <th>카테고리</th>
+        <th>코드</th>
+        <th>섹션</th>
+    </tr>
+    <tr>
+        <td><strong>뉴스</strong></td>
+        <td><code>news</code></td>
+        <td>economy, politics, society, culture, world, tech, entertainment, opinion</td>
+    </tr>
+    <tr>
+        <td><strong>증권사 보고서</strong></td>
+        <td><code>research</code></td>
+        <td>market, strategy, company, industry, economy, bond</td>
+    </tr>
+    <tr>
+        <td><strong>공시/IR</strong></td>
+        <td><code>company</code></td>
+        <td>disclosure, ir</td>
+    </tr>
+    <tr>
+        <td><strong>특허</strong></td>
+        <td><code>patent</code></td>
+        <td>patent</td>
+    </tr>
+</table>
+
+<h3>주요 API 함수</h3>
+
+<table>
+    <tr>
+        <th>함수명</th>
+        <th>용도</th>
+        <th>KRX 활용 예시</th>
+    </tr>
+    <tr>
+        <td><code>DocumentSearch</code></td>
+        <td>문서 검색</td>
+        <td>특정 상장사 관련 뉴스 검색</td>
+    </tr>
+    <tr>
+        <td><code>DocumentTrends</code></td>
+        <td>문서 트렌드</td>
+        <td>특정 키워드 언급 빈도 추이</td>
+    </tr>
+    <tr>
+        <td><code>DocumentAggregation</code></td>
+        <td>문서 집계</td>
+        <td>특정 이슈 기업 리스트 추출</td>
+    </tr>
+    <tr>
+        <td><code>GetSentimentScore</code></td>
+        <td>감성 점수</td>
+        <td>상장사 긍/부정 뉴스 비율</td>
+    </tr>
+    <tr>
+        <td><code>SearchTrendingTopics</code></td>
+        <td>실시간 이슈</td>
+        <td>현재 핫한 경제 이슈 파악</td>
+    </tr>
+</table>
+</section>
+
+<!-- Section 2: Parameters and Response -->
+<section id="parameters">
+<h2>2. 호출 파라미터 및 응답 필드</h2>
+
+<h3>DocumentSearch 파라미터</h3>
+
+<pre><code>DocumentSearch(
+    category,              # 필수: 문서 카테고리 (news, research, company, patent)
+    section,               # 필수: 세부 섹션 (economy, politics 등)
+    query,                 # 필수: 검색 쿼리
+    count=10,              # 한 페이지 문서 수 (기본 10)
+    page=None,             # 페이지 번호
+    date_from=None,        # 검색 시작일 (YYYYMMDD)
+    date_to=None,          # 검색 종료일 (YYYYMMDD)
+    summary=True,          # 문서 요약 여부
+    clustering=False,      # 클러스터링 사용 여부
+    uniquify=True,         # 중복 문서 제거
+    highlight=False,       # 키워드 하이라이트
+    fields=None            # 반환할 필드 지정
+)</code></pre>
+
+<h3>검색 쿼리 필드 (심화 검색)</h3>
+
+<h4>기본 필드</h4>
+<table>
+    <tr><th>필드</th><th>설명</th><th>예시</th></tr>
+    <tr><td><code>title:키워드</code></td><td>제목에서 검색</td><td><code>title:삼성전자</code></td></tr>
+    <tr><td><code>content:키워드</code></td><td>본문에서 검색</td><td><code>content:실적</code></td></tr>
+    <tr><td><code>publisher:언론사</code></td><td>특정 언론사 필터</td><td><code>publisher:한겨레</code></td></tr>
+</table>
+
+<h4>상장사 관련 (securities)</h4>
+<table>
+    <tr><th>필드</th><th>설명</th><th>예시</th></tr>
+    <tr><td><code>securities.name:기업명</code></td><td>관련종목 기업명</td><td><code>securities.name:삼성전자</code></td></tr>
+    <tr><td><code>securities.symbol:코드</code></td><td>관련종목 종목코드</td><td><code>securities.symbol:005930</code></td></tr>
+    <tr><td><code>securities.market:시장</code></td><td>시장별 필터</td><td><code>securities.market:KOSPI</code></td></tr>
+</table>
+
+<h4>기업/인물 언급 (named_entities)</h4>
+<table>
+    <tr><th>필드</th><th>설명</th><th>예시</th></tr>
+    <tr><td><code>named_entities.entities.company.name</code></td><td>언급된 기업 (비상장 포함)</td><td><code>...company.name:카카오</code></td></tr>
+    <tr><td><code>named_entities.entities.person.name</code></td><td>언급된 인물</td><td><code>...person.name:이재용</code></td></tr>
+    <tr><td><code>named_entities.entities.brand.name</code></td><td>언급된 브랜드</td><td><code>...brand.name:갤럭시</code></td></tr>
+</table>
+
+<h4>감성/ESG 분석</h4>
+<table>
+    <tr><th>필드</th><th>설명</th><th>예시</th></tr>
+    <tr><td><code>polarity.name</code></td><td>긍부정 필터</td><td><code>polarity.name:긍정</code></td></tr>
+    <tr><td><code>polarity.label</code></td><td>긍부정 코드</td><td><code>polarity.label:'1'</code> (긍정)</td></tr>
+    <tr><td><code>esg.category.name</code></td><td>ESG 카테고리</td><td><code>esg.category.name:환경</code></td></tr>
+    <tr><td><code>esg.polarity.name</code></td><td>ESG 긍부정</td><td><code>esg.polarity.name:부정</code></td></tr>
+</table>
+
+<h3>Boolean 연산자</h3>
+<table>
+    <tr><th>연산자</th><th>설명</th><th>예시</th></tr>
+    <tr><td><code>and</code></td><td>AND 조건</td><td><code>삼성전자 and 실적</code></td></tr>
+    <tr><td><code>or</code></td><td>OR 조건</td><td><code>KOSPI or KOSDAQ</code></td></tr>
+    <tr><td><code>!</code> 또는 <code>-</code></td><td>NOT 조건</td><td><code>삼성전자 !소송</code></td></tr>
+    <tr><td><code>()</code></td><td>그룹핑</td><td><code>삼성전자 and (갤럭시 or 아이폰)</code></td></tr>
+</table>
+
+<h3>Proximity Search (근접 검색)</h3>
+<pre><code># "삼성전자"와 "아이폰"이 문서 내 5단어 이내에 함께 나타나는 경우
+DocumentSearch("news","economy","\"삼성전자 아이폰\"~5")
+
+# 실무 예시: "회계" "부정"이 15단어 이내에 등장
+DocumentSearch("news","economy","\"회계 부정\"~15")</code></pre>
+
+<h3>시간 단위 검색</h3>
+<pre><code># 특정 날짜 + 시간 범위로 검색
+DocumentSearch(
+    ["news"], [],
+    "삼성전자 and created_at:[\"2024-01-15T09:00:00\" to \"2024-01-15T18:00:00\"]"
+)</code></pre>
+
+<h3>DocumentSearch 응답 구조</h3>
+<pre><code>{
+  "success": true,
+  "data": {
+    "total_matches": 1234,      // 총 검색 결과 수
+    "current_page": 1,
+    "last_page": 100,
+    "docs": [...]               // 문서 배열
+  }
+}</code></pre>
+
+<h3>개별 문서(doc) 필드</h3>
+
+<details>
+    <summary>기본 정보</summary>
+    <div>
+        <table>
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td><code>uid</code> / <code>uid_str</code></td><td>number/string</td><td>문서 고유 ID</td></tr>
+            <tr><td><code>category</code></td><td>string</td><td>문서 카테고리 (news, company 등)</td></tr>
+            <tr><td><code>section</code></td><td>string</td><td>세부 섹션 (economy, disclosure 등)</td></tr>
+            <tr><td><code>publisher</code></td><td>string</td><td>출처 (언론사명, 증권사명 등)</td></tr>
+            <tr><td><code>author</code></td><td>string</td><td>작성자</td></tr>
+            <tr><td><code>title</code></td><td>string</td><td>제목</td></tr>
+            <tr><td><code>content</code></td><td>string</td><td>본문 요약 (원문 아님, DeepSearch가 생성한 요약본)</td></tr>
+            <tr><td><code>content_url</code></td><td>string</td><td>원문 링크</td></tr>
+            <tr><td><code>created_at</code></td><td>string</td><td>문서 생성 일시</td></tr>
+        </table>
+        <div class="warning-box">
+            <strong>참고:</strong> <code>content</code> 필드는 DeepSearch가 생성한 <strong>요약본</strong>입니다. 실제 기사 원문이 아닙니다. 원문을 확인하려면 <code>content_url</code> 링크를 참조해야 합니다.
+        </div>
+    </div>
+</details>
+
+<details>
+    <summary>기업/엔티티 필드</summary>
+    <div>
+        <h4>securities (관련 종목)</h4>
+        <div class="info-box"><strong>상장기업만</strong> 매핑됨. 문서가 특정 상장기업에 대한 것으로 판단될 때 매핑</div>
+<pre><code>{
+  "securities": [
+    {
+      "type": "company",
+      "exchange": "KRX",
+      "market": "KOSPI",           // KOSPI, KOSDAQ, KONEX
+      "symbol": "005930",          // 종목코드
+      "name": "삼성전자",           // 기업명
+      "company_rid": "...",        // 법인등록번호
+      "business_rid": "..."        // 사업자등록번호
+    }
+  ]
+}</code></pre>
+
+        <h4>entities (관련 엔티티)</h4>
+        <div class="info-box">문서에서 추출된 주요 엔티티. 간략한 형태</div>
+<pre><code>{
+  "entities": [
+    {"type": "company", "name": "삼성전자"},
+    {"type": "company", "name": "SK하이닉스"}
+  ]
+}</code></pre>
+
+        <h4>named_entities (언급 내용)</h4>
+        <div class="warning-box">본문에서 언급된 모든 기업/인물/브랜드. <strong>비상장기업 포함</strong></div>
+<pre><code>{
+  "named_entities": [
+    {
+      "type": "organization",      // company, person, brand 등
+      "name": "카카오뱅크",
+      "count": 5                   // 언급 횟수
+    }
+  ]
+}</code></pre>
+    </div>
+</details>
+
+<details>
+    <summary>분석 정보</summary>
+    <div>
+        <h4>polarity (긍부정 분석)</h4>
+        <div class="info-box">securities가 매핑된 문서에 대해 긍부정 분석 수행</div>
+<pre><code>{
+  "polarity": {
+    "label": "1",        // 1: 긍정, 0: 중립, -1: 부정
+    "name": "긍정",
+    "score": 0.85        // 신뢰도 (0.0 ~ 1.0)
+  }
+}</code></pre>
+
+        <h4>esg (ESG 분석)</h4>
+<pre><code>{
+  "esg": {
+    "category": {
+      "label": "E",          // E: 환경, S: 사회, G: 지배구조, U: 해당없음
+      "name": "환경",
+      "score": 0.92
+    },
+    "polarity": {
+      "label": "1",          // ESG 관점 긍부정
+      "name": "긍정",
+      "score": 0.78
+    }
+  }
+}</code></pre>
+
+        <h4>industry (산업 분류)</h4>
+<pre><code>{
+  "industry": {
+    "label": "C26",          // 한국표준산업분류 코드
+    "name": "전자부품, 컴퓨터, 영상, 음향 및 통신장비 제조업",
+    "score": 0.95
+  }
+}</code></pre>
+    </div>
+</details>
+</section>
+
+<!-- Section 3: Comparison -->
+<section id="comparison">
+<h2>3. 상장사 검색 필드 이해 - KRX 핵심</h2>
+
+<div class="danger-box">
+    <strong>KRX 담당자가 반드시 알아야 할 핵심 개념</strong><br>
+    DeepSearch는 기사를 분석하여 <strong>세 가지 방식</strong>으로 기업 정보를 매핑합니다. 이 차이를 정확히 이해해야 원하는 검색 결과를 얻을 수 있습니다.
+</div>
+
+<h3>한눈에 보는 차이점</h3>
+
+<table>
+    <tr>
+        <th>구분</th>
+        <th>securities</th>
+        <th>entities</th>
+        <th>named_entities</th>
+    </tr>
+    <tr>
+        <td><strong>대상</strong></td>
+        <td>상장기업만</td>
+        <td>주요 기업</td>
+        <td>모든 언급 (비상장 포함)</td>
+    </tr>
+    <tr>
+        <td><strong>매핑 기준</strong></td>
+        <td>문서가 해당 기업에 <strong>관한</strong> 것</td>
+        <td>문서에서 추출된 주요 기업</td>
+        <td>본문에 <strong>언급된</strong> 모든 것</td>
+    </tr>
+    <tr>
+        <td><strong>정보량</strong></td>
+        <td>상세 (종목코드, 시장, 등록번호)</td>
+        <td>간략 (이름, 타입)</td>
+        <td>중간 (이름, 타입, 언급횟수)</td>
+    </tr>
+    <tr>
+        <td><strong>비상장 포함</strong></td>
+        <td>❌</td>
+        <td>⚠️ 일부</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td><strong>인물 포함</strong></td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>✅</td>
+    </tr>
+</table>
+
+<!-- Use Case 1: 상장사가 주제인 기사 찾기 -->
+<div class="use-case-box">
+    <h4>활용사례 1: 상장사가 "주제"인 기사 찾기 (securities 사용)</h4>
+
+    <div class="diagram-box">
+        <h4>securities 필드의 동작 원리</h4>
+        <div class="flow-diagram">
+            <div class="flow-step">기사 본문</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step api">DeepSearch AI 분석</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step highlight">"이 기사의 주제가<br>특정 상장사인가?"</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step result">securities 매핑</div>
+        </div>
+    </div>
+
+    <div class="use-case-highlight">
+        <strong>핵심 포인트:</strong> "남성", "대상"은 일반적으로 흔히 쓰이는 단어입니다. 하지만 유가증권시장에 상장된 "(주)남성", "(주)대상"이라는 기업도 있습니다.<br><br>
+        <code>securities</code> 필드로 검색하면, 단순히 "남성"이라는 단어가 언급된 기사가 아니라, <strong>DeepSearch가 "남성"이라는 상장사를 주제로 판단한 기사만</strong> 검색됩니다.
+    </div>
+
+<pre><code># 상장사 "남성"이 주제인 기사 검색 (흔한 단어 "남성"이 포함된 기사는 제외됨)
+DocumentSearch(["news"], ["economy"], "securities.name:남성")
+
+# 상장사 "대상"이 주제인 기사 검색 (흔한 단어 "대상"이 포함된 기사는 제외됨)
+DocumentSearch(["news"], ["economy"], "securities.name:대상")
+
+# KOSPI/KOSDAQ 전체 상장사가 주제인 기사
+DocumentSearch(["news"], ["economy"], "securities.market:(KOSPI or KOSDAQ)")</code></pre>
+</div>
+
+<!-- Use Case 2: 상장사가 언급된 기사 찾기 -->
+<div class="use-case-box">
+    <h4>활용사례 2: 상장사가 "언급된" 기사 찾기 (named_entities 사용)</h4>
+
+    <div class="diagram-box">
+        <h4>named_entities 필드의 동작 원리</h4>
+        <div class="flow-diagram">
+            <div class="flow-step">기사 본문</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step api">NER(개체명 인식)</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step highlight">"이 기사에서<br>언급된 기업은?"</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step result">named_entities 매핑</div>
+        </div>
+    </div>
+
+    <div class="use-case-highlight">
+        <strong>핵심 포인트:</strong> 기사의 주제가 아니더라도, 본문에서 <strong>언급만 되어도</strong> 검색됩니다. 비상장 기업, 인물, 브랜드도 포함됩니다.
+    </div>
+
+<pre><code># 삼성전자가 "언급된" 모든 기사 (주제가 아니어도 됨)
+DocumentSearch(["news"], ["economy"], "named_entities.entities.company.name:삼성전자")
+
+# 특정 인물이 언급된 기사
+DocumentSearch(["news"], ["economy"], "named_entities.entities.person.name:이재용")
+
+# 비상장 기업이 언급된 기사 (쿠팡은 미국 상장)
+DocumentSearch(["news"], ["economy"], "named_entities.entities.company.name:쿠팡")</code></pre>
+</div>
+
+<!-- Use Case 3: 주요 종속회사가 언급된 기사 찾기 -->
+<div class="use-case-box">
+    <h4>활용사례 3: 상장사의 주요 종속회사가 언급된 기사 찾기</h4>
+
+    <div class="diagram-box">
+        <h4>종속회사 모니터링 전략</h4>
+        <div class="flow-diagram">
+            <div class="flow-step">상장사 종속회사 목록<br>(비상장 포함)</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step api">named_entities 검색</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step filter">후처리: 상장 모회사<br>매핑</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step result">종속회사 이슈<br>모회사 알림</div>
+        </div>
+    </div>
+
+    <div class="use-case-highlight">
+        <strong>핵심 포인트:</strong> 상장사의 종속회사는 대부분 비상장입니다. <code>securities</code>로는 검색되지 않으므로, <code>named_entities</code>로 검색 후 모회사 정보를 매핑해야 합니다.
+    </div>
+
+<pre><code># 삼성전자의 비상장 종속회사가 언급된 기사 검색
+# (예: 삼성디스플레이, 삼성메디슨 등)
+DocumentSearch(["news"], ["economy"], "named_entities.entities.company.name:삼성디스플레이")
+
+# 여러 종속회사 동시 검색
+DocumentSearch(
+    ["news"], ["economy"],
+    "named_entities.entities.company.name:(삼성디스플레이 or 삼성메디슨 or 삼성바이오로직스)"
+)</code></pre>
+</div>
+
+<h3>실제 예시로 이해하기</h3>
+<p><strong>예시 뉴스:</strong> '삼성전자, 카카오뱅크와 MOU 체결... 이재용 회장 참석'</p>
+
+<div class="comparison">
+    <div class="card securities">
+        <h4>securities</h4>
+<pre><code>[
+  {
+    "market": "KOSPI",
+    "symbol": "005930",
+    "name": "삼성전자"
+  }
+]</code></pre>
+        <p>삼성전자 <strong>관련</strong> 뉴스로 판단<br>
+        카카오뱅크는 비상장(당시)이므로 미포함</p>
+    </div>
+
+    <div class="card entities">
+        <h4>entities</h4>
+<pre><code>[
+  {"type": "company", "name": "삼성전자"},
+  {"type": "company", "name": "카카오뱅크"}
+]</code></pre>
+        <p>문서의 주요 기업만 추출<br>
+        간략한 정보</p>
+    </div>
+
+    <div class="card named-entities">
+        <h4>named_entities</h4>
+<pre><code>[
+  {"type": "company", "name": "삼성전자", "count": 5},
+  {"type": "company", "name": "카카오뱅크", "count": 3},
+  {"type": "person", "name": "이재용", "count": 2}
+]</code></pre>
+        <p>언급된 모든 기업/인물<br>
+        언급 횟수 포함</p>
+    </div>
+</div>
+
+<h3>KRX 업무별 권장 필드</h3>
+<table>
+    <tr><th>업무 목적</th><th>권장 필드</th><th>이유</th></tr>
+    <tr><td><strong>상장사 뉴스 모니터링</strong></td><td><code>securities</code></td><td>상장사만 정확히 필터링, 종목코드로 매칭</td></tr>
+    <tr><td><strong>공시 의무 판단</strong></td><td><code>securities</code> + <code>polarity</code></td><td>상장사 관련 부정 뉴스 집중 모니터링</td></tr>
+    <tr><td><strong>비상장 자회사 이슈</strong></td><td><code>named_entities</code></td><td>비상장 기업도 언급 시 포착</td></tr>
+    <tr><td><strong>대표이사/임원 관련</strong></td><td><code>named_entities.person</code></td><td>인물 언급 추적</td></tr>
+    <tr><td><strong>전체 이슈 파악</strong></td><td><code>named_entities</code></td><td>가장 넓은 범위 포착</td></tr>
+</table>
+</section>
+
+<!-- Section 4: KRX Practice -->
+<section id="krx-practice">
+<h2>4. KRX 실무활용예시</h2>
+
+<div class="info-box">
+    이 섹션에서는 DeepSearch API를 활용한 실제 KRX 업무 시나리오를 다룹니다.<br>
+    각 시나리오는 <strong>다이어그램 → 설명 → 코드</strong> 순서로 직관적으로 이해할 수 있도록 구성되어 있습니다.
+</div>
+
+<div class="section-toc">
+    <div class="section-toc-title">이 섹션의 내용</div>
+    <ul>
+        <li><a href="#s4-1">1. 상장사 주제 + 키워드</a></li>
+        <li><a href="#s4-2">2. 긍부정 필터링</a></li>
+        <li><a href="#s4-3">3. 일일 모니터링</a></li>
+        <li><a href="#s4-4">4. 공시 의무 탐지</a></li>
+        <li><a href="#s4-5">5. 테마/이슈 모니터링</a></li>
+        <li><a href="#s4-6">6. 실시간 이슈</a></li>
+        <li><a href="#s4-7">7. 비상장사 재무수치</a></li>
+        <li><a href="#s4-util">유틸리티 함수</a></li>
+    </ul>
+</div>
+
+<!-- Scenario: 상장사 주제 + 키워드 검색 -->
+<div class="scenario-card" id="s4-1">
+    <div class="scenario-header">
+        <h4>시나리오 1: 특정 상장사 주제 기사 + 키워드 검색</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> DeepSearch가 특정 상장사 "주제"로 판단한 기사 중, 특정 키워드가 포함된 기사만 찾기
+        </div>
+
+        <div class="diagram-box">
+            <h4>검색 흐름</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">전체 뉴스</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">securities로<br>상장사 주제 필터</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">title/content에서<br>키워드 검색</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">최종 결과</div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <strong>중요한 차이점:</strong><br>
+            • <code>securities</code>: DeepSearch가 <strong>사전에 AI로 분석하여</strong> 해당 상장사 주제 기사로 판단한 것<br>
+            • <code>title/content 키워드</code>: 단순 <strong>Ctrl+F에 해당하는 문자열 검색</strong><br><br>
+            <strong>참고:</strong> <code>content</code> 필드는 기사 원문이 아닌 DeepSearch가 생성한 <strong>요약본</strong>입니다. 원문 전체를 대상으로 키워드 검색하는 것이 아님에 유의하세요.
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 삼성전자 주제 기사 중 "수주"가 언급된 기사 (제목+요약본 검색)
+DocumentSearch(
+    ["news"], ["economy"],
+    "securities.name:삼성전자 and (title:수주 or content:수주)"
+)
+
+# KOSPI 상장사 주제 기사 중 "실적" 키워드가 포함된 기사
+DocumentSearch(
+    ["news"], ["economy"],
+    "securities.market:KOSPI and (title:실적 or content:실적)"
+)
+
+# 제목에서만 키워드 검색 (더 정확한 필터링)
+DocumentSearch(
+    ["news"], ["economy"],
+    "securities.name:현대자동차 and title:리콜"
+)</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 긍부정 필터링 -->
+<div class="scenario-card" id="s4-2">
+    <div class="scenario-header">
+        <h4>시나리오 2: 상장사 긍부정 뉴스 필터링</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 특정 상장사 관련 부정적 뉴스만 추출하여 공시 의무 여부 검토
+        </div>
+
+        <div class="diagram-box">
+            <h4>긍부정 필터링 흐름</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">상장사 주제 기사</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">DeepSearch<br>감성분석</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">polarity.label<br>필터링</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">부정 뉴스 목록</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># KOSPI/KOSDAQ 상장사 관련 부정 뉴스
+DocumentSearch(
+    ["news"], ["economy"],
+    "securities.market:(KOSPI or KOSDAQ) and polarity.name:부정",
+    count=50
+)
+
+# 특정 기업의 부정 뉴스
+DocumentSearch(
+    ["news"], ["economy"],
+    "securities.name:삼성전자 and polarity.label:'-1'"  # -1: 부정
+)
+
+def filter_negative_news(docs):
+    """부정 뉴스 필터링 후처리"""
+    return [
+        {
+            'title': doc['title'],
+            'company': [s['name'] for s in doc.get('securities', [])],
+            'polarity_score': doc.get('polarity', {}).get('score'),
+            'url': doc.get('content_url'),
+            'created_at': doc.get('created_at')
+        }
+        for doc in docs
+        if doc.get('polarity', {}).get('label') == '-1'
+    ]</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 일일 뉴스 모니터링 -->
+<div class="scenario-card" id="s4-3">
+    <div class="scenario-header">
+        <h4>시나리오 3: 일일 뉴스 모니터링</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 매일 아침 전일 상장사 관련 주요 뉴스 파악
+        </div>
+
+        <div class="diagram-box">
+            <h4>일일 모니터링 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">전일 날짜 설정</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">부정 뉴스<br>API 조회</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">기업별 그룹핑</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">3건 이상 기업<br>우선 확인</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code>from datetime import datetime, timedelta
+
+def daily_news_monitoring():
+    """일일 상장사 뉴스 모니터링"""
+
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+    today = datetime.now().strftime("%Y%m%d")
+
+    # 1. KOSPI/KOSDAQ 부정 뉴스 수집
+    negative_news = DocumentSearch(
+        ["news"], ["economy"],
+        "securities.market:(KOSPI or KOSDAQ) and polarity.name:부정",
+        date_from=yesterday,
+        date_to=today,
+        count=100
+    )
+
+    # 2. 기업별 그룹핑
+    by_company = {}
+    for doc in negative_news['docs']:
+        for sec in doc.get('securities', []):
+            name = sec['name']
+            if name not in by_company:
+                by_company[name] = []
+            by_company[name].append({
+                'title': doc['title'],
+                'polarity_score': doc.get('polarity', {}).get('score'),
+                'url': doc['content_url']
+            })
+
+    # 3. 부정 뉴스 3건 이상인 기업 우선 확인
+    alert_companies = {
+        k: v for k, v in by_company.items() if len(v) >= 3
+    }
+
+    return alert_companies</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 공시 의무 발생 가능성 탐지 -->
+<div class="scenario-card" id="s4-4">
+    <div class="scenario-header">
+        <h4>시나리오 4: 공시 의무 발생 가능성 탐지</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 주요경영사항 공시 또는 조회공시 대상이 될 수 있는 뉴스 사전 탐지
+        </div>
+
+        <div class="diagram-box">
+            <h4>공시 의무 탐지 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">공시 관련 키워드<br>정의</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">상장사 기사 +<br>키워드 검색</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">긴급도별 분류<br>(횡령/배임 등)</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">즉시확인 /<br>모니터링 분류</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code>def detect_disclosure_candidates():
+    """공시 의무 발생 가능성이 높은 뉴스 탐지"""
+
+    # 공시 의무 관련 키워드
+    disclosure_keywords = [
+        "인수", "합병", "M&A", "매각", "분할",
+        "유상증자", "무상증자", "감자",
+        "횡령", "배임", "회계부정", "분식",
+        "대표이사 사임", "대표이사 선임",
+        "영업정지", "허가취소", "행정처분",
+        "소송 제기", "패소", "손해배상",
+        "실적 쇼크", "적자 전환", "감사의견 거절"
+    ]
+
+    # 키워드를 title/content 검색으로 구성
+    keyword_query = " or ".join([f'(title:"{kw}" or content:"{kw}")' for kw in disclosure_keywords])
+    query = f"securities.market:(KOSPI or KOSDAQ) and ({keyword_query})"
+
+    docs = DocumentSearch(
+        ["news"], ["economy"],
+        query,
+        count=50
+    )
+
+    # 긴급도 분류
+    urgent = []     # 즉시 확인 필요
+    watch = []      # 모니터링 필요
+
+    for doc in docs['docs']:
+        title = doc['title']
+
+        # 긴급 키워드
+        if any(kw in title for kw in ['횡령', '배임', '분식', '감사의견']):
+            urgent.append(doc)
+        else:
+            watch.append(doc)
+
+    return {'urgent': urgent, 'watch': watch}</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 특정 테마/이슈 모니터링 -->
+<div class="scenario-card" id="s4-5">
+    <div class="scenario-header">
+        <h4>시나리오 5: 특정 테마/이슈 모니터링</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 특정 테마(예: AI, 2차전지) 관련 상장사 뉴스 추적
+        </div>
+
+        <div class="diagram-box">
+            <h4>테마 모니터링 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">테마 키워드<br>정의</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">상장사 기사 +<br>테마 키워드</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">기업별 언급빈도<br>집계</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">테마 관련<br>상장사 순위</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code>def theme_monitoring(theme_keywords, markets=['KOSPI', 'KOSDAQ']):
+    """특정 테마 관련 상장사 뉴스 모니터링
+
+    Args:
+        theme_keywords: ['AI', '인공지능', '생성AI', 'ChatGPT']
+        markets: ['KOSPI', 'KOSDAQ']
+    """
+    from datetime import datetime, timedelta
+
+    # 1. 테마 키워드 쿼리 구성 (title/content 검색)
+    theme_query = " or ".join([f'(title:"{kw}" or content:"{kw}")' for kw in theme_keywords])
+    market_query = " or ".join(markets)
+
+    query = f"securities.market:({market_query}) and ({theme_query})"
+
+    # 2. 최근 1주일 뉴스 검색
+    docs = DocumentSearch(
+        ["news"], [],
+        query,
+        count=100,
+        date_from=(datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
+    )
+
+    # 3. 기업별 언급 빈도 집계
+    company_mentions = {}
+    for doc in docs['docs']:
+        for sec in doc.get('securities', []):
+            name = sec['name']
+            symbol = sec['symbol']
+            key = f"{name}({symbol})"
+
+            if key not in company_mentions:
+                company_mentions[key] = {
+                    'count': 0,
+                    'positive': 0,
+                    'negative': 0
+                }
+
+            company_mentions[key]['count'] += 1
+
+            pol = doc.get('polarity', {}).get('name', '중립')
+            if pol == '긍정':
+                company_mentions[key]['positive'] += 1
+            elif pol == '부정':
+                company_mentions[key]['negative'] += 1
+
+    # 4. 언급 빈도순 정렬
+    sorted_companies = sorted(
+        company_mentions.items(),
+        key=lambda x: x[1]['count'],
+        reverse=True
+    )
+
+    return sorted_companies[:20]
+
+# 사용 예시
+ai_companies = theme_monitoring(['AI', '인공지능', '생성AI', 'ChatGPT', 'LLM'])
+battery_companies = theme_monitoring(['2차전지', '배터리', '리튬', '양극재', '음극재'])</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 실시간 이슈 대응 -->
+<div class="scenario-card" id="s4-6">
+    <div class="scenario-header">
+        <h4>시나리오 6: 실시간 이슈 대응</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 실시간 트렌딩 이슈 중 상장사 관련 건 신속 파악
+        </div>
+
+        <div class="diagram-box">
+            <h4>실시간 이슈 대응 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step api">트렌딩 토픽<br>조회</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">상장사 관련<br>토픽 필터</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">부정 이슈<br>우선 정렬</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">실시간 알림</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code>def realtime_issue_monitoring():
+    """실시간 트렌딩 이슈 중 상장사 관련 건 모니터링"""
+
+    # 1. 현재 트렌딩 토픽 조회
+    trending = SearchTrendingTopics(["news"], ["economy"])
+
+    # 2. 상장사 관련 토픽 필터링
+    stock_related_topics = []
+
+    for topic in trending['topics']['news']['economy']:
+        securities = topic.get('statistics', {}).get('securities', [])
+
+        if securities:
+            stock_related_topics.append({
+                'rank': topic['rank'],
+                'topic': topic['topic'],
+                'score': topic['score'],
+                'keywords': [k['keyword'] for k in topic.get('keywords', [])[:5]],
+                'companies': [f"{s['name']}({s['market']})" for s in securities[:5]],
+                'sentiment': topic.get('statistics', {}).get('polarities', [])
+            })
+
+    # 3. 부정적 이슈 우선 정렬
+    def has_negative_sentiment(topic):
+        for pol in topic.get('sentiment', []):
+            if pol.get('label') == '-1' and pol.get('doc_count', 0) > 0:
+                return True
+        return False
+
+    negative_first = sorted(
+        stock_related_topics,
+        key=lambda x: (has_negative_sentiment(x), -x['score']),
+        reverse=True
+    )
+
+    return negative_first</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- Scenario: 비상장사 외감재무수치 자동수집 -->
+<div class="scenario-card" id="s4-7">
+    <div class="scenario-header">
+        <h4>시나리오 7: 비상장사 외감재무수치 자동수집</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 상장 예정 기업 또는 상장사 주요 종속회사의 재무제표를 자동으로 수집하여 상장심사/모니터링에 활용
+        </div>
+
+        <div class="diagram-box">
+            <h4>비상장사 재무데이터 수집 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">대상 기업<br>검색 (NICE 코드)</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">GetFinancialStatements<br>재무제표 조회</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">주요 계정<br>추출/집계</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">재무추이 분석<br>이상징후 탐지</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>NICE평가정보 데이터 활용</strong><br>
+            DeepSearch의 재무데이터는 <strong>NICE평가정보</strong>에서 제공됩니다. NICE평가정보는 국내 금융기관에 재무데이터를 지배적으로 공급하는 기관으로, 은행 대출심사, 신용평가, 기업신용조회 등에 동일한 데이터가 활용됩니다.<br><br>
+            • <strong>IFRS / K-GAAP</strong> 모두 지원<br>
+            • <strong>연결/별도</strong> 재무제표 선택 가능<br>
+            • <strong>연간/분기</strong> 데이터 조회 가능<br>
+            • 외부감사대상 비상장기업 전수 커버리지
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. 비상장 기업 검색 (NICE 코드 확보)
+# 방법 1: 기업명으로 검색
+entities = FindEntity("Financial", "카카오뱅크*")
+# 결과: NICE:xxxxxx 형태의 코드 확인
+
+# 방법 2: 사업자등록번호로 검색 (대시 없이 숫자만)
+entities = FindEntity("Financial", "1234567890", fields=["business_rid"])
+
+# 방법 3: 상장사의 주요 종속회사 검색
+subsidiaries = FindEntity("Financial", "삼성디스플레이")  # NICE:xxxxxx
+
+
+# 2. 재무제표 조회 - IFRS 기준 연결
+fs_ifrs = GetFinancialStatements(
+    "NICE:352705",           # 비상장사 NICE 코드
+    report_type="IFRS",
+    consolidated=True,        # 연결재무제표
+    is_annual=True,           # 연간 데이터
+    report_ids="BalanceSheet,Income",  # 재무상태표, 손익계산서
+    date_from="2020-01-01",
+    date_to="2024-12-31"
+)
+
+# 3. 재무제표 조회 - K-GAAP 기준
+fs_gaap = GetFinancialStatements(
+    "NICE:352705",
+    report_type="GAAP",       # K-GAAP
+    consolidated=False,       # 별도재무제표
+    is_annual=True,
+    date_from="2020-01-01",
+    date_to="2024-12-31"
+)
+
+
+# 4. 주요 재무지표 추이 분석 함수
+def analyze_financial_trends(entity_code, years=5):
+    """비상장사 주요 재무지표 추이 분석"""
+    import pandas as pd
+    from datetime import datetime, timedelta
+
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=365*years)).strftime("%Y-%m-%d")
+
+    # 재무제표 조회
+    fs = GetFinancialStatements(
+        entity_code,
+        report_type="IFRS",
+        consolidated=True,
+        is_annual=True,
+        date_from=start_date,
+        date_to=end_date
+    )
+
+    # 주요 계정 코드 (DeepSearch 재무계정 기준)
+    key_accounts = {
+        '1100': '현금및현금성자산',
+        '1300': '매출채권',
+        '2900': '자산총계',
+        '4000': '부채총계',
+        '5000': '자본총계',
+        '6000': '매출액',
+        '6500': '영업이익',
+        '7000': '당기순이익'
+    }
+
+    # 연도별 주요 지표 추출
+    trends = {}
+    for account_id, account_name in key_accounts.items():
+        account_data = [
+            row for row in fs
+            if row['account_id'] == account_id
+        ]
+        trends[account_name] = {
+            row['date'][:4]: row['value']
+            for row in account_data
+        }
+
+    return trends
+
+
+# 5. 상장심사 체크포인트 분석
+def check_listing_requirements(entity_code):
+    """상장예비심사 재무요건 체크"""
+
+    fs = GetFinancialStatements(
+        entity_code,
+        report_type="IFRS",
+        consolidated=True,
+        is_annual=True,
+        date_from="2021-01-01"
+    )
+
+    # 최근 3개년 추출
+    recent_years = {}
+    for row in fs:
+        year = row['date'][:4]
+        if year not in recent_years:
+            recent_years[year] = {}
+        recent_years[year][row['account_id']] = row['value']
+
+    # 코스피 상장요건 체크 예시
+    checks = {
+        '자기자본': [],
+        '매출액': [],
+        '영업이익': [],
+        '당기순이익': []
+    }
+
+    for year in sorted(recent_years.keys())[-3:]:
+        data = recent_years[year]
+        checks['자기자본'].append(data.get('5000', 0))  # 자본총계
+        checks['매출액'].append(data.get('6000', 0))
+        checks['영업이익'].append(data.get('6500', 0))
+        checks['당기순이익'].append(data.get('7000', 0))
+
+    return {
+        '자기자본_최근': checks['자기자본'][-1] if checks['자기자본'] else 0,
+        '매출액_3년평균': sum(checks['매출액']) / len(checks['매출액']) if checks['매출액'] else 0,
+        '영업이익_흑자연속': all(v > 0 for v in checks['영업이익']),
+        '당기순이익_흑자연속': all(v > 0 for v in checks['당기순이익'])
+    }
+
+
+# 6. 사용 예시: 상장예정기업 재무추이 모니터링
+target_companies = [
+    "NICE:352705",  # 예시 기업 1
+    "NICE:380679",  # 예시 기업 2
+]
+
+for company in target_companies:
+    trends = analyze_financial_trends(company, years=3)
+    requirements = check_listing_requirements(company)
+    print(f"\n{company} 분석 결과:")
+    print(f"  - 자기자본: {requirements['자기자본_최근']:,.0f}원")
+    print(f"  - 영업이익 연속흑자: {requirements['영업이익_흑자연속']}")</code></pre>
+        </details>
+
+        <div class="warning-box">
+            <strong>활용 시 참고사항</strong><br>
+            • <code>GetAvailableFinancialStatements(entity_code)</code>로 해당 기업의 사용 가능한 재무제표 목록을 먼저 확인할 수 있습니다<br>
+            • 비상장사는 <code>NICE:xxxxxx</code> 형태의 코드를 사용합니다<br>
+            • 분기 데이터 조회 시 <code>is_annual=False</code>로 설정합니다<br>
+            • 재무계정 코드표는 DeepSearch 문서를 참조하세요
+        </div>
+    </div>
+</div>
+
+<!-- 특정 시장/종목 필터링 유틸리티 -->
+<h3 id="s4-util">유틸리티 함수: 시장/종목 필터링</h3>
+<details>
+    <summary>코드 보기</summary>
+<pre><code>def filter_by_market(docs, markets=['KOSPI', 'KOSDAQ']):
+    """특정 시장의 종목만 필터링"""
+    filtered = []
+    for doc in docs:
+        for sec in doc.get('securities', []):
+            if sec.get('market') in markets:
+                filtered.append(doc)
+                break
+    return filtered
+
+def filter_by_symbols(docs, symbol_list):
+    """특정 종목코드 리스트에 해당하는 문서만"""
+    filtered = []
+    for doc in docs:
+        for sec in doc.get('securities', []):
+            if sec.get('symbol') in symbol_list:
+                filtered.append(doc)
+                break
+    return filtered</code></pre>
+</details>
+
+<h3>유틸리티 함수: 집계/통계</h3>
+<details>
+    <summary>코드 보기</summary>
+<pre><code>from collections import Counter
+
+def analyze_sentiment_distribution(docs):
+    """긍부정 분포 분석"""
+    sentiments = Counter()
+    for doc in docs:
+        pol = doc.get('polarity', {})
+        if pol:
+            sentiments[pol.get('name', '미분류')] += 1
+    return dict(sentiments)
+
+def analyze_company_mentions(docs):
+    """기업별 언급 빈도 분석"""
+    mentions = Counter()
+    for doc in docs:
+        for ne in doc.get('named_entities', []):
+            if ne.get('type') == 'company':
+                mentions[ne['name']] += ne.get('count', 1)
+    return mentions.most_common(20)</code></pre>
+</details>
+</section>
+
+<!-- Section 5: LLM -->
+<section id="llm">
+<h2>5. LLM을 연계한 KRX 실무활용예시</h2>
+
+<div class="info-box">
+    DeepSearch API는 <strong>구조화된 데이터</strong>를 제공하고,<br>
+    LLM은 <strong>비정형 분석과 판단</strong>을 담당하는 역할 분담이 효과적입니다.<br><br>
+    이 섹션에서는 앞서 소개한 시나리오에 LLM을 추가로 연계하여 더 높은 수준의 분석을 수행하는 방법을 소개합니다.
+</div>
+
+<div class="section-toc">
+    <div class="section-toc-title">이 섹션의 내용</div>
+    <ul>
+        <li><a href="#s5-1">1. 공시 의무 판단 보조</a></li>
+        <li><a href="#s5-2">2. 실시간 이슈 자동 대응</a></li>
+        <li><a href="#s5-3">3. 주가 변동 원인 분석</a></li>
+        <li><a href="#s5-4">4. 테마 분석 심화</a></li>
+        <li><a href="#s5-5">5. 일일 브리핑 자동 생성</a></li>
+        <li><a href="#s5-tips">프롬프트 설계 팁</a></li>
+    </ul>
+</div>
+
+<!-- LLM Scenario 1: 공시 의무 판단 보조 -->
+<div class="scenario-card" id="s5-1">
+    <div class="scenario-header">
+        <h4>LLM 연계 시나리오 1: 공시 의무 판단 보조</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> DeepSearch로 수집한 뉴스를 LLM이 분석하여 공시 의무 발생 가능성 판단
+        </div>
+
+        <div class="diagram-box">
+            <h4>DeepSearch + LLM 연계 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step api">DeepSearch<br>부정 뉴스 수집</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">상장사 매핑</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step llm">LLM<br>공시 규정 적용</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">공시 필요성<br>판단 결과</div>
+            </div>
+        </div>
+
+        <div class="use-case-highlight">
+            <strong>LLM이 추가하는 가치:</strong><br>
+            • DeepSearch: 부정 뉴스 필터링, 상장사 매핑 (정량적)<br>
+            • LLM: 뉴스 내용 심층 분석, 공시 규정 적용 여부 판단 (정성적)
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. DeepSearch로 부정 뉴스 수집
+query = "securities.market:KOSPI and polarity.name:부정"
+docs = DocumentSearch(["news"], ["economy"], query, count=20)
+
+# 2. LLM에게 공시 필요성 판단 요청
+for doc in docs['docs']:
+    prompt = f"""
+당신은 한국거래소의 시장감시 담당자입니다.
+다음 뉴스가 공시 의무를 발생시킬 수 있는지 분석해주세요.
+
+[뉴스 제목]: {doc['title']}
+[뉴스 요약]: {doc['content']}
+[관련 기업]: {', '.join([s['name'] for s in doc.get('securities', [])])}
+[원문 링크]: {doc.get('content_url')}
+
+분석 관점:
+1. 주요경영사항 공시 대상인가?
+2. 조회공시 요구 가능성이 있는가?
+3. 불공정거래 혐의 요소가 있는가?
+
+[출력 형식]
+- 공시 필요성: 높음/중간/낮음
+- 관련 공시 유형: (해당시 기재)
+- 긴급도: 즉시/1일내/1주내
+- 근거: (분석 내용)
+"""
+    # LLM API 호출
+    # response = call_llm(prompt)</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- LLM Scenario 2: 실시간 이슈 자동 대응 -->
+<div class="scenario-card" id="s5-2">
+    <div class="scenario-header">
+        <h4>LLM 연계 시나리오 2: 실시간 이슈 자동 대응</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 트렌딩 이슈가 발생했을 때 LLM이 즉시 분석하여 대응 방안 제시
+        </div>
+
+        <div class="diagram-box">
+            <h4>실시간 이슈 대응 + LLM</h4>
+            <div class="flow-diagram">
+                <div class="flow-step api">트렌딩 토픽<br>감지</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">상장사 관련<br>필터링</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step llm">LLM<br>긴급도 판단</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">자동 알림 +<br>대응 방안</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. 트렌딩 토픽 조회 (앞서 정의한 함수 활용)
+trending = realtime_issue_monitoring()
+
+# 2. 상장사 관련 부정 이슈가 있으면 LLM 분석
+for topic in trending[:5]:  # 상위 5개 토픽만 분석
+    if any(pol.get('label') == '-1' for pol in topic.get('sentiment', [])):
+
+        prompt = f"""
+실시간으로 다음과 같은 이슈가 트렌딩되고 있습니다.
+한국거래소 시장감시 담당자로서 대응 방안을 제시해주세요.
+
+[이슈 정보]
+- 토픽: {topic['topic']}
+- 순위: {topic['rank']}
+- 주요 키워드: {', '.join(topic['keywords'])}
+- 관련 상장사: {', '.join(topic['companies'])}
+
+[요청 사항]
+1. 이슈의 심각도 평가 (1-10점)
+2. 즉각적인 조치 필요 여부
+3. 조회공시 요구 대상 기업 (해당시)
+4. 향후 24시간 모니터링 포인트
+5. 권장 대응 조치
+"""
+        # LLM API 호출
+        # response = call_llm(prompt)</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- LLM Scenario 3: 주가 변동 원인 분석 -->
+<div class="scenario-card" id="s5-3">
+    <div class="scenario-header">
+        <h4>LLM 연계 시나리오 3: 주가 변동 원인 분석</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 급등/급락 시점의 뉴스와 감성 데이터를 LLM이 종합 분석하여 원인 추론
+        </div>
+
+        <div class="diagram-box">
+            <h4>주가 변동 분석 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step">급등/급락<br>종목 식별</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">해당 시점<br>뉴스 수집</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step api">감성 추이<br>조회</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step llm">LLM<br>원인 분석</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. 급등 시점 전후 뉴스 수집
+target_date = "2024-01-15"
+query = f'securities.symbol:005930 and created_at:["{target_date}T00:00:00" to "{target_date}T23:59:59"]'
+docs = DocumentSearch(["news"], ["economy"], query)
+
+# 2. 감성 추이 조회
+trends = GetSentimentScore("삼성전자", interval="1d", date_from="20240101", date_to="20240120")
+
+# 3. LLM 분석
+def format_news_for_llm(docs):
+    return "\n".join([
+        f"- [{doc.get('created_at', '')[:16]}] [{doc.get('polarity', {}).get('name', '중립')}] {doc['title']}"
+        for doc in docs['docs'][:20]
+    ])
+
+prompt = f"""
+2024년 1월 15일 삼성전자 주가가 5% 급등했습니다.
+해당 일자의 뉴스와 최근 감성 추이를 분석하여 원인을 추론해주세요.
+
+[당일 주요 뉴스]
+{format_news_for_llm(docs)}
+
+[최근 감성 추이]
+- 1/10: 긍정 45%, 부정 30%, 중립 25%
+- 1/11: 긍정 50%, 부정 25%, 중립 25%
+- 1/12: 긍정 55%, 부정 20%, 중립 25%
+- 1/15: 긍정 70%, 부정 10%, 중립 20%
+
+[분석 요청]
+1. 주가 상승의 직접적 원인으로 보이는 뉴스
+2. 간접적/복합적 요인
+3. 향후 주의 관찰 포인트
+"""</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- LLM Scenario 4: 테마 분석 심화 -->
+<div class="scenario-card" id="s5-4">
+    <div class="scenario-header">
+        <h4>LLM 연계 시나리오 4: 테마 분석 심화</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 특정 테마(AI, 2차전지 등) 관련 뉴스를 LLM이 분석하여 투자 트렌드 파악
+        </div>
+
+        <div class="diagram-box">
+            <h4>테마 심층 분석 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step api">DeepSearch<br>테마 뉴스 수집</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">기업별 집계</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step llm">LLM<br>트렌드 분석</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">테마 분석<br>리포트</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. AI 테마 뉴스 수집 (앞서 정의한 함수 활용)
+ai_news = DocumentSearch(
+    ["news"], ["economy"],
+    'securities.market:(KOSPI or KOSDAQ) and (title:"AI" or title:"인공지능" or content:"생성AI")',
+    count=50,
+    date_from=(datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
+)
+
+# 2. 기업별 집계
+from collections import Counter
+company_counter = Counter()
+for doc in ai_news['docs']:
+    for sec in doc.get('securities', []):
+        company_counter[sec['name']] += 1
+
+top_companies = company_counter.most_common(10)
+
+# 3. LLM에게 트렌드 분석 요청
+news_titles = "\n".join([f"- {doc['title']}" for doc in ai_news['docs'][:30]])
+
+prompt = f"""
+당신은 증권 시장 애널리스트입니다.
+최근 1주일간 AI 관련 뉴스를 분석하여 투자 트렌드를 파악해주세요.
+
+[AI 관련 뉴스 (최근 1주일)]
+{news_titles}
+
+[AI 테마 언급 빈도 상위 기업]
+{', '.join([f"{name}({count}건)" for name, count in top_companies])}
+
+[분석 요청]
+1. AI 테마의 최근 동향 (3-5문장)
+2. 주목해야 할 기업과 그 이유
+3. 향후 1-2주 모니터링 포인트
+4. 잠재적 리스크 요인
+"""</code></pre>
+        </details>
+    </div>
+</div>
+
+<!-- LLM Scenario 5: 일일 뉴스 요약 및 브리핑 자동 생성 -->
+<div class="scenario-card" id="s5-5">
+    <div class="scenario-header">
+        <h4>LLM 연계 시나리오 5: 일일 뉴스 요약 및 브리핑 자동 생성</h4>
+    </div>
+    <div class="scenario-body">
+        <div class="scenario-purpose">
+            <strong>목적:</strong> 대량의 뉴스를 LLM이 요약하여 경영진 보고용 브리핑 자동 생성
+        </div>
+
+        <div class="diagram-box">
+            <h4>자동 브리핑 생성 프로세스</h4>
+            <div class="flow-diagram">
+                <div class="flow-step api">DeepSearch<br>일일 뉴스 수집</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step filter">기업별/이슈별<br>그룹핑</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step llm">LLM<br>요약 및 분류</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step result">일일 브리핑<br>리포트</div>
+            </div>
+        </div>
+
+        <details>
+            <summary>코드 보기</summary>
+<pre><code># 1. 특정 기업의 최근 뉴스 수집
+docs = DocumentSearch(
+    ["news"], ["economy"],
+    "securities.market:(KOSPI or KOSDAQ)",
+    count=100,
+    date_from=(datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+)
+
+# 2. 뉴스 목록 구성
+news_list = "\n".join([
+    f"- [{doc.get('polarity', {}).get('name', '중립')}] {doc['title']}"
+    for doc in docs['docs'][:50]
+])
+
+# 3. LLM에게 브리핑 요청
+prompt = f"""
+당신은 한국거래소의 시장 분석가입니다.
+다음은 오늘 주요 상장사 관련 뉴스 목록입니다.
+주요 이슈를 3-5개로 분류하고 각각 요약하여 경영진 브리핑 형태로 작성해주세요.
+
+[뉴스 목록]
+{news_list}
+
+[출력 형식]
+# 오늘의 시장 주요 이슈 브리핑
+
+## 1. (이슈 제목)
+- 요약: (2-3문장)
+- 관련 기업: (기업명 나열)
+- 시장 영향: 긍정/부정/중립
+- 후속 모니터링 필요 여부: Y/N
+
+## 2. (이슈 제목)
+...
+"""</code></pre>
+        </details>
+    </div>
+</div>
+
+<h3 id="s5-tips">LLM 프롬프트 설계 팁</h3>
+<table>
+    <tr><th>팁</th><th>예시</th></tr>
+    <tr>
+        <td><strong>구조화된 출력 요청</strong></td>
+        <td><code>[형식] - 항목1: (값) - 항목2: (값)</code><br>→ 후처리가 쉬운 일관된 형식</td>
+    </tr>
+    <tr>
+        <td><strong>도메인 컨텍스트 제공</strong></td>
+        <td>"당신은 한국거래소의 시장감시 담당자입니다."<br>→ 금융/증권 도메인 지식 활성화</td>
+    </tr>
+    <tr>
+        <td><strong>판단 기준 명시</strong></td>
+        <td>"높음: 즉시 조치, 중간: 1주 내 모니터링, 낮음: 정기"<br>→ 일관된 판단 기준</td>
+    </tr>
+    <tr>
+        <td><strong>근거 요청</strong></td>
+        <td>"판단 근거를 뉴스 내용에서 인용하여 설명"<br>→ 할루시네이션 방지</td>
+    </tr>
+</table>
+</section>
+
+<footer>
+    <p>DeepSearch API 가이드 | 한국거래소 업무 활용 참고 자료</p>
+    <p>문의: DeepSearch 기술지원</p>
+</footer>
+
+</body>
+</html>
