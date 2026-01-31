@@ -489,7 +489,7 @@ search_list_df_original = load_data_from_db()
 # 뉴스 문서의 세부 카테고리 (section 파라미터)
 domestic_news_dict = {
     '국내뉴스': ['전체', '경제', '기술/IT', '문화', '사설', '사회', '세계', '연예', '정치'],
-    'news': ['[""]', '["economy"]', '["tech"]', '["culture"]', '["opinion"]',
+    'news': ['[]', '["economy"]', '["tech"]', '["culture"]', '["opinion"]',
              '["society"]', '["world"]', '["entertainment"]', '["politics"]']
 }
 df_domestic_news = pd.DataFrame(domestic_news_dict)
@@ -785,8 +785,8 @@ if search_clicked:
         query_parts_and = []
         query_parts_comma = []
 
-        # 뉴스 섹션 조건 추가 ([""] 빈 섹션은 제외)
-        if domestic_news_query and domestic_news_query != '[""]':
+        # 뉴스 섹션 조건 추가 ([] 빈 배열도 포함 - API 필수 파라미터)
+        if domestic_news_query:
             query_parts.append(domestic_news_query)
 
         # 언론사 조건 추가
@@ -814,10 +814,12 @@ if search_clicked:
         final_query_comma = ' , '.join(query_parts_comma)
 
         # 완성된 DocumentSearch 쿼리
+        # 검색어가 없으면 * (와일드카드)를 기본값으로 사용 (API 필수 파라미터)
+        search_term = final_query_condition if final_query_condition else '*'
         final_query_all = (
             intro +
             final_query_category +
-            (' , "' + final_query_condition + '"' if final_query_condition else '') +
+            ' , "' + search_term + '"' +
             ((' , ' if final_query_comma else '') + final_query_comma) +
             outro
         )
