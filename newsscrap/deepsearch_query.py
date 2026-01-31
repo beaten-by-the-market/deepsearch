@@ -612,10 +612,8 @@ with st.expander("🔍 검색 조건", expanded=True):
     # 전체 선택 시: 안내 메시지와 언론사 목록 expander 표시
     # 그 외: 기존 multiselect 방식 유지
     if news_comp_selection == '전체':
-        st.info('전체 언론사(약 575개)를 대상으로 합니다.')
-
         # 언론사 상세 정보 expander (접힌 상태)
-        with st.expander('Deepsearch 제공 언론사 상세 및 [빅카인즈(BIG KINDS)](https://www.bigkinds.or.kr) 비교'):
+        with st.expander('Deepsearch 제공 언론사(약 575개) 상세 및 [빅카인즈(BIG KINDS)](https://www.bigkinds.or.kr)(약 100개) 비교'):
             st.markdown('''
 | 구분 | 딥서치 | 빅카인즈 |
 |:---:|:---:|:---:|
