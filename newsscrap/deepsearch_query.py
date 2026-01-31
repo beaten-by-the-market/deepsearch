@@ -191,16 +191,18 @@ def make_request(url, headers, max_retries=5):
         이는 DeepSearch API의 인증서 문제를 우회하기 위함입니다.
     """
     attempt = 0
+    last_error = None
     while attempt < max_retries:
         try:
-            response = requests.get(url, headers=headers, verify=False)
+            response = requests.get(url, headers=headers, verify=False, timeout=30)
             response.raise_for_status()  # HTTP 오류 상태 코드 확인 (4xx, 5xx)
             return response
         except requests.exceptions.RequestException as e:
+            last_error = e
             attempt += 1
-            print(f"Request failed: {e}. Attempt {attempt} of {max_retries}. Retrying in 5 seconds...")
+            st.warning(f"API 요청 실패 (시도 {attempt}/{max_retries}): {str(e)[:200]}")
             time.sleep(5)
-    raise Exception("Max retries exceeded")
+    raise Exception(f"Max retries exceeded. Last error: {last_error}")
 
 
 # ==============================================================================
