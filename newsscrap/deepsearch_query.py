@@ -585,7 +585,7 @@ with st.expander("🔍 검색 조건", expanded=True):
 
     with col_sec:
         # 뉴스 섹션 선택
-        domestic_news_selection = st.selectbox('뉴스 섹션', df_domestic_news['국내뉴스'])
+        domestic_news_selection = st.selectbox('뉴스 섹션', df_domestic_news['국내뉴스'], index=1)  # 기본값: 경제
 
     domestic_news_query = df_domestic_news[df_domestic_news['국내뉴스'] == domestic_news_selection]['news'].values[0]
 
@@ -903,7 +903,15 @@ if 'df' in st.session_state:
             st.subheader('시장 또는 종목')
         with col_help1:
             with st.popover('ℹ️'):
-                st.markdown('DeepSearch가 자연어처리를 통해 기사주제가 해당종목에 대한 것으로 식별한 기사를 필터합니다. 例) 유가 상장사 "대상", "남성"은 단순히 "대상", "남성"이 있으면 매칭하지 않고, 기사가 해당 상장사에 대한 것일 때 식별됩니다.')
+                st.markdown('''
+DeepSearch가 자연어처리를 통해 식별한 **관련종목**(기사 주제)과 **언급종목**(본문 언급)을 합쳐서 필터링합니다.
+
+4가지 식별자(종목코드, NICE코드, 사업자등록번호, 법인등록번호)로 교차검증하여 KRX 상장사를 식별합니다.
+
+⚠️ **참고**: "DB", "NAVER" 등 일반 단어와 유사한 종목명은 DeepSearch 측의 오탐 비율이 높을 수 있습니다.
+
+[상세 비교 보기](https://beaten-by-the-market.github.io/deepsearch/api_guide.html#comparison)
+''')
 
         filter_type = st.radio(
             '필터 유형',
@@ -1187,10 +1195,11 @@ if 'df' in st.session_state:
                                                search_list_df.loc[search_list_df['company_rid'].notna(), 'entity_name']))
 
                 def filter_df(row):
-                    """각 문서 행에서 KRX 상장사 언급 여부를 확인"""
+                    """각 문서 행에서 KRX 상장사 언급 여부를 확인 (관련종목 + 언급종목 합집합)"""
                     identified_list = []
                     matched = False
 
+                    # securities, entities, named_entities 필드 모두 검사 (합집합)
                     for col in ['securities', 'entities', 'named_entities']:
                         if col not in row or row[col] is None:
                             continue
