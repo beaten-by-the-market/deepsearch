@@ -785,8 +785,8 @@ if search_clicked:
         query_parts_and = []
         query_parts_comma = []
 
-        # 뉴스 섹션 조건 추가
-        if domestic_news_query:
+        # 뉴스 섹션 조건 추가 ([""] 빈 섹션은 제외)
+        if domestic_news_query and domestic_news_query != '[""]':
             query_parts.append(domestic_news_query)
 
         # 언론사 조건 추가
