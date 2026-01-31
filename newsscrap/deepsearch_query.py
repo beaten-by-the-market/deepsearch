@@ -370,7 +370,7 @@ def get_analyst_reports(symbol, date_from, date_to, headers, count=50):
 st.set_page_config(page_title='KRX 검색기', layout="wide")
 st.markdown('<h1>KRX 상장사 뉴스 검색기 <span style="font-size: 0.5em; font-weight: normal;">(뉴스검색과 연계한 공시/IR/애널보고서/주가 분석)</span></h1>', unsafe_allow_html=True)
 st.caption('※본 서비스는 Deepsearch의 공식서비스가 아니며, 정재광 과장이 Deepsearch API 문서를 참고하여 제작해본 서비스 예시입니다.')
-st.markdown("### [📚 (참고링크) DeepSearch를 KRX 업무에 활용하는 방안 예시](https://your-username.github.io/deepsearch/api_guide.html)")
+st.markdown("### [📚 (참고링크) DeepSearch를 KRX 업무에 활용하는 방안 예시](https://beaten-by-the-market.github.io/deepsearch/api_guide.html)")
 
 
 # ==============================================================================
