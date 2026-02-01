@@ -167,7 +167,11 @@ DocumentSearch(["news"], [], "키워드 and created_at:[\"2022-07-12T00:00:00\" 
 
 **Database:**
 - `execute_values()` from `psycopg2.extras` for fast batch inserts (page_size=1000)
-- `@st.cache_data` for caching entity data in Streamlit
+
+**Streamlit Caching:**
+- `get_last_update_time()`: TTL 20분 캐시, DB의 last_update 값 조회
+- `load_data_from_db(last_update_key)`: last_update 값을 캐시 키로 사용, DB 갱신 시 자동 무효화
+- GitHub Actions 완료 후 최대 20분 내 새 데이터 반영
 
 ## Key Data Structures
 
