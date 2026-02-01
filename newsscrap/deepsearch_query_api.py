@@ -6,6 +6,7 @@ from tqdm import tqdm
 import psycopg2
 from psycopg2.extras import execute_values
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -152,8 +153,8 @@ summary_df2 = pd.merge(summary_df, listed_df[['symbol','mkt']],
                               how = 'left',
                               on = 'symbol')
 
-#오늘날짜 설정
-today = (datetime.today()).strftime('%Y%m%d')
+#오늘날짜 설정 (한국 시간대 기준)
+today = datetime.now(ZoneInfo('Asia/Seoul')).strftime('%Y%m%d')
 
 #업데이트일 추가
 summary_df2['last_update'] = today
