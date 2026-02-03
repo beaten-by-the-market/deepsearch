@@ -27,7 +27,9 @@ import requests
 import os
 import time
 import psycopg2
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
+from zoneinfo import ZoneInfo
 import plotly.graph_objects as go
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -158,8 +160,10 @@ def generate_url(base_query, page):
     """
     # 기본 쿼리의 page 값을 원하는 페이지로 교체
     query = base_query.replace('page = 1', f'page = {page}')
-    # URL에서 줄바꿈 문자 제거 (쿼리가 여러 줄로 작성된 경우 대비)
-    return f'{url_base}{query}'.replace('\n', '')
+    # URL에서 줄바꿈 문자 제거 후 URL 인코딩 적용
+    # (콜론, 따옴표 등 특수문자가 URL에서 올바르게 처리되도록)
+    encoded_query = quote(query.replace('\n', ''), safe='')
+    return f'{url_base}{encoded_query}'
 
 
 def make_request(url, headers, max_retries=5):
@@ -752,9 +756,17 @@ with st.expander("🔍 검색 조건", expanded=True):
 
         if datetime_start_date and datetime_end_date:
             # created_at 필드에 대한 범위 쿼리 형식
+            # 24시는 다음 날 00시로 변환
             datetime_start = f"{datetime_start_date}T{datetime_start_time:02}:00:00"
-            datetime_end = f"{datetime_end_date}T{datetime_end_time:02}:00:00"
-            datetime_query = f'created_at:[\\"{datetime_start}\\" to \\"{datetime_end}\\"]'
+            if datetime_end_time == 24:
+                next_day = datetime_end_date + timedelta(days=1)
+                datetime_end = f"{next_day}T00:00:00"
+            else:
+                datetime_end = f"{datetime_end_date}T{datetime_end_time:02}:00:00"
+            # 백슬래시+따옴표 이스케이프: \" 형태로 API에 전달
+            bs = chr(92)  # backslash
+            qt = chr(34)  # double quote
+            datetime_query = f'created_at:[{bs}{qt}{datetime_start}{bs}{qt} to {bs}{qt}{datetime_end}{bs}{qt}]'
         else:
             datetime_query = ''
     else:
@@ -788,104 +800,141 @@ if search_clicked:
     # 기간 필수 체크
     if not use_date and not use_datetime:
         st.error("기간은 반드시 선택해야 합니다. 짧을 수록 빨리 검색됩니다.")
-    else:
-        # 쿼리 파트 조합
-        # query_parts: 카테고리, 섹션 등 쉼표로 구분되는 파라미터
-        # query_parts_and: 검색어 부분 (and로 연결)
-        # query_parts_comma: date_from, date_to 등 쉼표로 구분되는 파라미터
-        query_parts = ['["news"]']  # 뉴스 카테고리 고정
-        query_parts_and = []
-        query_parts_comma = []
+        st.stop()
 
-        # 뉴스 섹션 조건 추가 ([] 빈 배열도 포함 - API 필수 파라미터)
-        if domestic_news_query:
-            query_parts.append(domestic_news_query)
+    # 한국 시간 기준 현재 날짜/시간
+    kst = ZoneInfo('Asia/Seoul')
+    now_kst = datetime.now(kst)
+    today_kst = now_kst.date()
 
-        # 언론사 조건 추가
-        if news_comp_query:
-            query_parts_and.append(news_comp_query)
+    # 미래 날짜 검증
+    is_future_date = False
+    if use_date:
+        if end_date > today_kst:
+            is_future_date = True
+    elif use_datetime:
+        # 종료 날짜+시간이 현재 시간보다 미래인지 확인
+        # 24시는 다음 날 0시로 처리
+        if datetime_end_time == 24:
+            end_datetime_kst = datetime(
+                datetime_end_date.year,
+                datetime_end_date.month,
+                datetime_end_date.day,
+                0, 0, 0,
+                tzinfo=kst
+            ) + timedelta(days=1)
+        else:
+            end_datetime_kst = datetime(
+                datetime_end_date.year,
+                datetime_end_date.month,
+                datetime_end_date.day,
+                datetime_end_time, 0, 0,
+                tzinfo=kst
+            )
+        if end_datetime_kst > now_kst:
+            is_future_date = True
 
-        # 날짜 조건 추가
-        if date_query:
-            query_parts_comma.append(date_query)
+    if is_future_date:
+        st.error(f"미래 날짜는 검색할 수 없습니다. 현재 한국 시간: {now_kst.strftime('%Y-%m-%d %H:%M')} 이전의 날짜를 선택해주세요.")
+        st.stop()
 
-        # 날짜+시간 조건 추가
-        if datetime_query:
-            query_parts_and.append(datetime_query)
+    # 쿼리 파트 조합
+    # query_parts: 카테고리, 섹션 등 쉼표로 구분되는 파라미터
+    # query_parts_and: 검색어 부분 (and로 연결)
+    # query_parts_comma: date_from, date_to 등 쉼표로 구분되는 파라미터
+    query_parts = ['["news"]']  # 뉴스 카테고리 고정
+    query_parts_and = []
+    query_parts_comma = []
 
-        # None 값 및 빈 문자열 제거
-        query_parts = [part for part in query_parts if part and part != 'None']
-        query_parts_and = [part for part in query_parts_and if part and part != 'None']
-        query_parts_comma = [part for part in query_parts_comma if part and part != 'None']
+    # 뉴스 섹션 조건 추가 ([] 빈 배열도 포함 - API 필수 파라미터)
+    if domestic_news_query:
+        query_parts.append(domestic_news_query)
 
-        # 최종 쿼리 조합
-        intro = 'DocumentSearch('
-        outro = ', count = 100, page = 1)'
-        final_query_category = ' , '.join(query_parts)
-        final_query_condition = ' and '.join(query_parts_and)
-        final_query_comma = ' , '.join(query_parts_comma)
+    # 언론사 조건 추가
+    if news_comp_query:
+        query_parts_and.append(news_comp_query)
 
-        # 완성된 DocumentSearch 쿼리
-        # 검색어가 없으면 * (와일드카드)를 기본값으로 사용 (API 필수 파라미터)
-        search_term = final_query_condition if final_query_condition else '*'
-        final_query_all = (
-            intro +
-            final_query_category +
-            ' , "' + search_term + '"' +
-            ((' , ' if final_query_comma else '') + final_query_comma) +
-            outro
-        )
+    # 날짜 조건 추가
+    if date_query:
+        query_parts_comma.append(date_query)
 
-        # 페이지네이션 처리
-        current_page = 1
+    # 날짜+시간 조건 추가
+    if datetime_query:
+        query_parts_and.append(datetime_query)
+
+    # None 값 및 빈 문자열 제거
+    query_parts = [part for part in query_parts if part and part != 'None']
+    query_parts_and = [part for part in query_parts_and if part and part != 'None']
+    query_parts_comma = [part for part in query_parts_comma if part and part != 'None']
+
+    # 최종 쿼리 조합
+    intro = 'DocumentSearch('
+    outro = ', count = 100, page = 1)'
+    final_query_category = ' , '.join(query_parts)
+    final_query_condition = ' and '.join(query_parts_and)
+    final_query_comma = ' , '.join(query_parts_comma)
+
+    # 완성된 DocumentSearch 쿼리
+    # 검색어가 없으면 * (와일드카드)를 기본값으로 사용 (API 필수 파라미터)
+    search_term = final_query_condition if final_query_condition else '*'
+    final_query_all = (
+        intro +
+        final_query_category +
+        ' , "' + search_term + '"' +
+        ((' , ' if final_query_comma else '') + final_query_comma) +
+        outro
+    )
+
+    # 페이지네이션 처리
+    current_page = 1
+    url = generate_url(final_query_all, current_page)
+
+    # 첫 페이지 요청
+    response = make_request(url, headers)
+    response_data = response.json()
+
+    # API 응답에서 문서 데이터 추출
+    # 응답 구조: data.pods[1].content.data.docs
+    docs = response_data['data']['pods'][1]['content']['data']['docs']
+    df_list = [pd.json_normalize(docs)]
+
+    # 전체 페이지 수 확인
+    last_page = response_data['data']['pods'][1]['content']['data']['last_page']
+
+    # 진행률 표시
+    st.caption('📡 DeepSearch API 호출중입니다. (하루 기준 약 1분 소요)')
+    progress_bar = st.progress(0)
+
+    # 나머지 페이지 순차 요청
+    while current_page < last_page:
+        current_page += 1
         url = generate_url(final_query_all, current_page)
-
-        # 첫 페이지 요청
         response = make_request(url, headers)
         response_data = response.json()
 
-        # API 응답에서 문서 데이터 추출
-        # 응답 구조: data.pods[1].content.data.docs
         docs = response_data['data']['pods'][1]['content']['data']['docs']
-        df_list = [pd.json_normalize(docs)]
+        df_list.append(pd.json_normalize(docs))
 
-        # 전체 페이지 수 확인
-        last_page = response_data['data']['pods'][1]['content']['data']['last_page']
+        # 진행률 업데이트
+        progress = int(current_page / last_page * 100)
+        progress_bar.progress(progress)
 
-        # 진행률 표시
-        st.caption('📡 DeepSearch API 호출중입니다. (하루 기준 약 1분 소요)')
-        progress_bar = st.progress(0)
+    # 전체 결과 병합
+    df = pd.concat(df_list, ignore_index=True)
 
-        # 나머지 페이지 순차 요청
-        while current_page < last_page:
-            current_page += 1
-            url = generate_url(final_query_all, current_page)
-            response = make_request(url, headers)
-            response_data = response.json()
+    # 중복 컬럼 제거
+    df_show = df.loc[:, ~df.columns.duplicated()]
 
-            docs = response_data['data']['pods'][1]['content']['data']['docs']
-            df_list.append(pd.json_normalize(docs))
+    # 결과 요약 표시
+    if not df.empty and all(col in df.columns for col in ['section', 'publisher', 'author', 'title', 'content', 'content_url']):
+        df_show = df[['section', 'publisher', 'author', 'title', 'content', 'content_url']]
+        count = len(df_show)
+        st.success(f"총 {count}건의 뉴스가 검색되었습니다. 아래 필터를 적용하여 결과를 확인하세요.")
+    else:
+        st.warning("선택한 기간에 해당 검색 결과가 없습니다. 검색 기간을 늘려보세요.")
 
-            # 진행률 업데이트
-            progress = int(current_page / last_page * 100)
-            progress_bar.progress(progress)
-
-        # 전체 결과 병합
-        df = pd.concat(df_list, ignore_index=True)
-
-        # 중복 컬럼 제거
-        df_show = df.loc[:, ~df.columns.duplicated()]
-
-        # 결과 요약 표시
-        if not df.empty and all(col in df.columns for col in ['section', 'publisher', 'author', 'title', 'content', 'content_url']):
-            df_show = df[['section', 'publisher', 'author', 'title', 'content', 'content_url']]
-            count = len(df_show)
-            st.success(f"총 {count}건의 뉴스가 검색되었습니다. 아래 필터를 적용하여 결과를 확인하세요.")
-        else:
-            st.warning("선택한 기간에 해당 검색 결과가 없습니다. 검색 기간을 늘려보세요.")
-
-        # 결과를 session_state에 저장 (필터링에서 사용)
-        st.session_state.df = df
+    # 결과를 session_state에 저장 (필터링에서 사용)
+    st.session_state.df = df
 
 
 # ==============================================================================
