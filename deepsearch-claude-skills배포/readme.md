@@ -12,8 +12,6 @@ GitHub 저장소에서 `deepsearch.zip` 파일을 다운로드합니다.
 2. `deepsearch.zip` 파일 클릭
 3. 우측 상단 `···` 버튼 클릭 → **Download** 선택
 
-![다운로드 방법](https://img.shields.io/badge/GitHub-···_→_Download-blue)
-
 ---
 
 ## 2. 압축 해제
@@ -25,6 +23,7 @@ GitHub 저장소에서 `deepsearch.zip` 파일을 다운로드합니다.
 # deepsearch.zip을 해당 폴더에 풀면 아래 구조가 됩니다:
 
 my-project/
+├── .env                              ← API 키 설정 (직접 생성)
 ├── .claude/                          ← 슬래시 커맨드 등록
 │   ├── commands/
 │   │   ├── deepsearch.md             ← /deepsearch
@@ -59,14 +58,37 @@ my-project/
 
 ---
 
-## 3. VSCode에서 사용하기
+## 3. API 키 설정
+
+프로젝트 루트에 `.env` 파일을 만들고 DeepSearch API 키를 입력합니다.
+
+```bash
+# .env 파일 내용
+API_KEY=your_base64_encoded_api_key
+```
+
+API 키는 두 가지 형식 모두 사용 가능합니다:
+
+```bash
+# 형식 1: Base64 인코딩된 키 (그대로 입력)
+API_KEY=dXNlcjpwYXNzd29yZA==
+
+# 형식 2: user:password 형식 (자동으로 Base64 변환됨)
+API_KEY=user:password
+```
+
+> **주의:** `.env` 파일은 `.gitignore`에 추가하여 Git에 커밋되지 않도록 하세요.
+
+---
+
+## 4. VSCode에서 사용하기
 
 ### 사전 요구사항
 
-- **Claude Code VSCode 확장** 설치 필요
-- **DeepSearch API 키** 필요 (Base64 인코딩된 인증키)
+- **Claude Code VSCode 확장** 설치
+- **`.env` 파일에 API 키 설정** (위 3단계)
 
-### 슬래시 커맨드 사용법
+### 슬래시 커맨드
 
 VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니다:
 
@@ -81,8 +103,8 @@ VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니
 
 ```
 1. Claude Code 채팅창에서 슬래시(/) 입력
-2. project:deepsearch 선택 (또는 직접 타이핑)
-3. API 키와 함께 질문 입력
+2. deepsearch 선택 (또는 직접 타이핑)
+3. 질문 입력 (API 키는 .env에서 자동으로 읽힘)
 4. Claude가 DeepSearch API를 호출하여 결과 반환
 ```
 
@@ -90,33 +112,24 @@ VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니
 
 ```
 /deepsearch
-
-API키: {본인의_API_키}
-
 삼성전자의 최근 3년간 매출과 영업이익 추이를 분석하고,
 관련 최신 뉴스도 함께 정리해줘.
 ```
 
 ```
 /deepsearch-analytics
-
-API키: {본인의_API_키}
-
 벤자민 그레이엄 방법론으로 가치주를 스크리닝해줘.
 매출 1조 이상, 영업이익률 10% 이상, 흑자 기업 조건으로.
 ```
 
 ```
 /deepsearch-docs
-
-API키: {본인의_API_키}
-
 최근 1주일간 KOSPI 상장사 관련 부정적 뉴스를 검색해줘.
 ```
 
 ---
 
-## 4. 스킬별 상세 기능
+## 5. 스킬별 상세 기능
 
 ### deepsearch (통합)
 - 기업·재무 + 문서검색 + 분석 기능 모두 포함
@@ -142,7 +155,7 @@ API키: {본인의_API_키}
 
 ---
 
-## 5. API 문서 참고
+## 6. API 문서 참고
 
 `docs/` 폴더에 DeepSearch API 원본 문서가 포함되어 있습니다:
 
