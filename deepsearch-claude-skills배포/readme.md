@@ -88,27 +88,9 @@ API_KEY=user:password
 - **Claude Code VSCode 확장** 설치
 - **`.env` 파일에 API 키 설정** (위 3단계)
 
-### 슬래시 커맨드
+### 사용법
 
-VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니다:
-
-| 커맨드 | 용도 | 사용 예시 |
-|--------|------|----------|
-| `/deepsearch` | 통합 (재무+문서+분석) | 삼성전자 최근 뉴스와 재무 분석해줘 |
-| `/deepsearch-finance` | 기업·재무 데이터 조회 | SK하이닉스 5년간 영업이익 추이 보여줘 |
-| `/deepsearch-analytics` | 스크리닝·밸류에이션 | 매출 1조 이상, 영업이익률 15% 이상 기업 찾아줘 |
-| `/deepsearch-docs` | 뉴스·공시·리포트 검색 | 반도체 관련 최근 뉴스 검색해줘 |
-
-### 사용 흐름
-
-```
-1. Claude Code 채팅창에서 슬래시(/) 입력
-2. deepsearch 선택 (또는 직접 타이핑)
-3. 질문 입력 (API 키는 .env에서 자동으로 읽힘)
-4. Claude가 DeepSearch API를 호출하여 결과 반환
-```
-
-### 사용 예시
+VSCode에서 Claude Code 채팅창에 `/deepsearch`를 입력한 뒤 질문을 작성합니다.
 
 ```
 /deepsearch
@@ -116,46 +98,11 @@ VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니
 관련 최신 뉴스도 함께 정리해줘.
 ```
 
-```
-/deepsearch-analytics
-벤자민 그레이엄 방법론으로 가치주를 스크리닝해줘.
-매출 1조 이상, 영업이익률 10% 이상, 흑자 기업 조건으로.
-```
-
-```
-/deepsearch-docs
-최근 1주일간 KOSPI 상장사 관련 부정적 뉴스를 검색해줘.
-```
+API 키는 `.env`에서 자동으로 읽힙니다.
 
 ---
 
-## 5. 스킬별 상세 기능
-
-### deepsearch (통합)
-- 기업·재무 + 문서검색 + 분석 기능 모두 포함
-- 복합적인 질문에 적합
-- 시황분석 리포트 생성 (`market_overview.py`)
-
-### deepsearch-finance (기업·재무)
-- `GetFinancialStatements` — 재무제표 조회
-- 주가/PER/PBR 등 시장 데이터 조회
-- 기업 개요, 배당, 주주, 임원 정보
-
-### deepsearch-analytics (분석·스크리닝)
-- 가치투자 스크리닝 (Graham, Buffett 방법론)
-- 턴어라운드 기업 발굴
-- 포트폴리오 백테스팅
-- Top/Bottom/Sort/Rank 분석 함수
-
-### deepsearch-docs (문서검색)
-- `DocumentSearch` — 뉴스/공시/리포트/특허 검색
-- `DocumentTrends` — 키워드 트렌드 분석
-- `DocumentAggregation` — 문서 집계
-- KRX 상장사 모니터링
-
----
-
-## 6. API 문서 참고
+## 5. API 문서 참고
 
 `docs/` 폴더에 DeepSearch API 원본 문서가 포함되어 있습니다:
 
