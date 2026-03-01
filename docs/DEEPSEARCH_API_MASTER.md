@@ -29,10 +29,12 @@ curl -H 'Authorization: Basic {인증키}' -XGET 'https://api.deepsearch.com/v1/
 기본 구조: `기업 + 속성 + 기간`
 
 ```
-삼성전자 매출액
-삼성전자 매출액 2010-2020
 삼성전자 주가 2020-01-01-2020-12-31
+삼성전자 PER
+삼성전자 시가총액
 ```
+
+> **⚠️ 참고:** 재무제표 항목(매출액, 영업이익, 당기순이익, 자산, 부채, 자본 등)은 자연어 쿼리보다 `GetFinancialStatements` 함수([7.1절](#71-getfinancialstatements))가 더 안정적입니다. 자연어 재무 쿼리(`삼성전자 매출액 2020-2024`)는 KeyError가 발생할 수 있으므로, 주가/시장 데이터(종가, PER, PBR, 시가총액 등)에만 자연어 쿼리를 사용하세요.
 
 ### 2.2 기업 입력 방법
 
@@ -359,9 +361,9 @@ GetCompanyBranches(entities)
 
 ## 7. 재무 데이터 API
 
-### 7.1 GetFinancialStatements
+### 7.1 GetFinancialStatements (⚠️ 재무제표 조회 시 필수 권장)
 
-재무제표 조회
+매출액, 영업이익, 당기순이익, 자산총계, 부채총계, 자본총계 등 **모든 재무제표 항목**은 이 함수로 조회하는 것이 권장됩니다.
 
 ```python
 GetFinancialStatements(entities, report_type="IFRS", consolidated=True,
@@ -372,6 +374,17 @@ GetFinancialStatements(entities, report_type="IFRS", consolidated=True,
 **report_type:** IFRS, GAAP
 **report_ids:** Income, CashFlow, BalanceSheet, Ratio
 
+| 파라미터 | 값 | 설명 |
+|---------|---|------|
+| report_type | "IFRS" / "GAAP" | 회계기준 |
+| consolidated | True / False | 연결/별도 |
+| is_annual | True / False | 연간/분기 포함 |
+| report_ids | "BalanceSheet", "Income", "CashFlow", "Ratio" | 특정 제표만 |
+
+**❌ 기업명에 따옴표 금지:** `GetFinancialStatements("삼성전자")` → 403 오류
+**⭕ 올바른 사용:** `GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)`
+**❌ 자연어 재무 쿼리 비권장:** `삼성전자 매출액 2020-2024` → KeyError 발생 가능
+
 ### 7.2 GetAvailableFinancialStatements
 
 조회 가능한 재무제표 목록
@@ -381,6 +394,15 @@ GetAvailableFinancialStatements(entities, date_from=None, date_to=None)
 ```
 
 ### 7.3 분기 재무제표 쿼리
+
+> **권장:** 분기 재무제표는 `GetFinancialStatements` 함수에서 `is_annual=False`로 설정하여 조회하는 것이 더 안정적입니다.
+
+```python
+# 분기 재무제표 조회 (권장 방법)
+GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, is_annual=False, report_ids="Income", date_from=2024-01-01, date_to=2025-12-31)
+```
+
+아래는 자연어 쿼리로도 가능하나, KeyError가 발생할 수 있습니다:
 
 | 쿼리 | 회계기준 | 연결/별도 | 연도/분기 | 누적/증분 |
 |------|----------|----------|----------|----------|
@@ -697,3 +719,8 @@ GetHistoricalTopic(category, section, topic_uid, sorts=None,
 5. **Boolean 연산자**
    - 기본 AND 연산, OR/NOT 명시 가능
    - 예: `삼성전자 (갤럭시 or 아이폰) !소송`
+
+6. **재무제표 조회 시 GetFinancialStatements 권장**
+   - 자연어 쿼리(`삼성전자 매출액 2020-2024`)보다 `GetFinancialStatements` 함수가 안정적
+   - 주가/시장 데이터(종가, PER, PBR, 시가총액)는 자연어 쿼리 사용 가능
+   - `GetFinancialStatements`에서 기업명에 따옴표를 넣으면 403 오류 발생

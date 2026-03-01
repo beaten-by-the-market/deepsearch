@@ -1,9 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/**)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
       "Bash(*)",
-      "WebFetch(domain:beaten-by-the-market.github.io)"
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)"
     ]
   }
 }

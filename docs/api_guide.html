@@ -1471,6 +1471,8 @@ for company in target_companies:
             • <code>GetAvailableFinancialStatements(entity_code)</code>로 해당 기업의 사용 가능한 재무제표 목록을 먼저 확인할 수 있습니다<br>
             • 비상장사는 <code>NICE:xxxxxx</code> 형태의 코드를 사용합니다<br>
             • 분기 데이터 조회 시 <code>is_annual=False</code>로 설정합니다<br>
+            • <strong>❌ 기업명에 따옴표 금지:</strong> <code>GetFinancialStatements("삼성전자")</code> → 403 오류 발생. 따옴표 없이 <code>GetFinancialStatements(삼성전자, ...)</code>로 사용<br>
+            • 자연어 재무 쿼리(<code>삼성전자 매출액 2020-2024</code>)는 KeyError 발생 가능 → <code>GetFinancialStatements</code> 사용 권장<br>
             • 재무계정 코드표는 DeepSearch 문서를 참조하세요
         </div>
     </div>
