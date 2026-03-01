@@ -27,10 +27,10 @@ GitHub 저장소에서 `deepsearch.zip` 파일을 다운로드합니다.
 my-project/
 ├── .claude/                          ← 슬래시 커맨드 등록
 │   ├── commands/
-│   │   ├── deepsearch.md             ← /project:deepsearch
-│   │   ├── deepsearch-finance.md     ← /project:deepsearch-finance
-│   │   ├── deepsearch-analytics.md   ← /project:deepsearch-analytics
-│   │   └── deepsearch-docs.md        ← /project:deepsearch-docs
+│   │   ├── deepsearch.md             ← /deepsearch
+│   │   ├── deepsearch-finance.md     ← /deepsearch-finance
+│   │   ├── deepsearch-analytics.md   ← /deepsearch-analytics
+│   │   └── deepsearch-docs.md        ← /deepsearch-docs
 │   └── settings.local.json
 ├── deepsearch/                       ← 메인 스킬 (통합)
 │   ├── SKILL.md
@@ -72,10 +72,10 @@ VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니
 
 | 커맨드 | 용도 | 사용 예시 |
 |--------|------|----------|
-| `/project:deepsearch` | 통합 (재무+문서+분석) | 삼성전자 최근 뉴스와 재무 분석해줘 |
-| `/project:deepsearch-finance` | 기업·재무 데이터 조회 | SK하이닉스 5년간 영업이익 추이 보여줘 |
-| `/project:deepsearch-analytics` | 스크리닝·밸류에이션 | 매출 1조 이상, 영업이익률 15% 이상 기업 찾아줘 |
-| `/project:deepsearch-docs` | 뉴스·공시·리포트 검색 | 반도체 관련 최근 뉴스 검색해줘 |
+| `/deepsearch` | 통합 (재무+문서+분석) | 삼성전자 최근 뉴스와 재무 분석해줘 |
+| `/deepsearch-finance` | 기업·재무 데이터 조회 | SK하이닉스 5년간 영업이익 추이 보여줘 |
+| `/deepsearch-analytics` | 스크리닝·밸류에이션 | 매출 1조 이상, 영업이익률 15% 이상 기업 찾아줘 |
+| `/deepsearch-docs` | 뉴스·공시·리포트 검색 | 반도체 관련 최근 뉴스 검색해줘 |
 
 ### 사용 흐름
 
@@ -89,7 +89,7 @@ VSCode에서 Claude Code 채팅창을 열고 슬래시 커맨드를 입력합니
 ### 사용 예시
 
 ```
-/project:deepsearch
+/deepsearch
 
 API키: {본인의_API_키}
 
@@ -98,7 +98,7 @@ API키: {본인의_API_키}
 ```
 
 ```
-/project:deepsearch-analytics
+/deepsearch-analytics
 
 API키: {본인의_API_키}
 
@@ -107,7 +107,7 @@ API키: {본인의_API_키}
 ```
 
 ```
-/project:deepsearch-docs
+/deepsearch-docs
 
 API키: {본인의_API_키}
 
