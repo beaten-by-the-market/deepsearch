@@ -33,6 +33,10 @@ from zoneinfo import ZoneInfo
 import plotly.graph_objects as go
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+# DocumentSearch 응답 파싱은 ds_client로 일원화 (pods[1].content.data.docs / exceptions 처리)
+# ⚠️ 함정: 문서 리스트 키는 'docs'(NOT documents), 에러는 HTTP200 + data.exceptions, 1년 한도 → ds_client 참조
+import ds_client
+
 # SSL 인증서 경고 비활성화 (DeepSearch API가 self-signed 인증서 사용 시)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -279,13 +283,8 @@ def get_disclosure_documents(symbol, date_from, date_to, headers, count=50):
         response = make_request(url, headers, max_retries=3)
         data = response.json()
 
-        if 'data' in data and 'pods' in data['data']:
-            for pod in data['data']['pods']:
-                if 'content' in pod and 'data' in pod['content']:
-                    content_data = pod['content']['data']
-                    if 'docs' in content_data:
-                        return content_data['docs']
-        return []
+        # ds_client로 파싱 일원화 ('docs' 키 / exceptions 처리)
+        return ds_client.parse_search_content(data).get('docs', [])
     except Exception as e:
         print(f"공시 조회 오류: {e}")
         return []
@@ -314,13 +313,8 @@ def get_ir_documents(symbol, date_from, date_to, headers, count=50):
         response = make_request(url, headers, max_retries=3)
         data = response.json()
 
-        if 'data' in data and 'pods' in data['data']:
-            for pod in data['data']['pods']:
-                if 'content' in pod and 'data' in pod['content']:
-                    content_data = pod['content']['data']
-                    if 'docs' in content_data:
-                        return content_data['docs']
-        return []
+        # ds_client로 파싱 일원화 ('docs' 키 / exceptions 처리)
+        return ds_client.parse_search_content(data).get('docs', [])
     except Exception as e:
         print(f"IR 조회 오류: {e}")
         return []
@@ -349,13 +343,8 @@ def get_analyst_reports(symbol, date_from, date_to, headers, count=50):
         response = make_request(url, headers, max_retries=3)
         data = response.json()
 
-        if 'data' in data and 'pods' in data['data']:
-            for pod in data['data']['pods']:
-                if 'content' in pod and 'data' in pod['content']:
-                    content_data = pod['content']['data']
-                    if 'docs' in content_data:
-                        return content_data['docs']
-        return []
+        # ds_client로 파싱 일원화 ('docs' 키 / exceptions 처리)
+        return ds_client.parse_search_content(data).get('docs', [])
     except Exception as e:
         print(f"애널리스트 보고서 조회 오류: {e}")
         return []
@@ -893,13 +882,19 @@ if search_clicked:
     response = make_request(url, headers)
     response_data = response.json()
 
-    # API 응답에서 문서 데이터 추출
-    # 응답 구조: data.pods[1].content.data.docs
-    docs = response_data['data']['pods'][1]['content']['data']['docs']
+    # API 응답에서 문서 데이터 추출 (ds_client로 파싱 일원화)
+    # 응답 구조: data.pods[1].content.data.docs ('docs' 키, exceptions 자동 확인)
+    # ⚠️ 검색 기간이 1년을 넘으면 data.exceptions(RequestEntityTooLarge)로 RuntimeError 발생
+    try:
+        content = ds_client.parse_search_content(response_data)
+    except RuntimeError as e:
+        st.error(f"검색에 실패했습니다. 검색 기간이 1년을 넘으면 결과를 받을 수 없습니다(비로그인 한도). 기간을 줄여주세요.\n\n{e}")
+        st.stop()
+    docs = content.get('docs', [])
     df_list = [pd.json_normalize(docs)]
 
     # 전체 페이지 수 확인
-    last_page = response_data['data']['pods'][1]['content']['data']['last_page']
+    last_page = content.get('last_page', 1)
 
     # 진행률 표시
     st.caption('📡 DeepSearch API 호출중입니다. (하루 기준 약 1분 소요)')
@@ -912,7 +907,7 @@ if search_clicked:
         response = make_request(url, headers)
         response_data = response.json()
 
-        docs = response_data['data']['pods'][1]['content']['data']['docs']
+        docs = ds_client.parse_search_content(response_data).get('docs', [])
         df_list.append(pd.json_normalize(docs))
 
         # 진행률 업데이트

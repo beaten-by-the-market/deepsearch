@@ -58,6 +58,17 @@ KRX 업무(조회공시, 주가급변 원인분석, 시장 모니터링)를 위�
 - Boolean: `and`, `or`, `!`(NOT), `()` 그룹핑
 - **중요:** DocumentSearch 기간은 최대 1년 이내로 제한됩니다.
 
+### ⚠️ DocumentSearch 실전 함정 (검증됨 — 같은 시행착오 금지)
+
+> 출처: `HANDOFF_DocumentSearch_news_20260610.md` / 정식 클라이언트: `newsscrap/ds_client.py`
+
+1. **기간 1년 한도**: 비로그인(Basic auth)은 검색 기간이 **1년을 넘으면 결과가 통째로 0건**.
+   증상이 "0건"이라 fields·OR 괄호를 의심하게 되지만 **둘 다 무죄**. → 초과분은 **≤1년 청크로 분할** 후 `content_url` dedup·병합.
+2. **결과가 0이면 가장 먼저 `data["exceptions"]` 확인**. 에러는 **HTTP 200 + `data.exceptions[]`** 로 온다.
+   1년 초과는 `RequestEntityTooLarge: "Not allowed to search more than 1 year if not logged in"`.
+3. **문서 리스트 키는 `docs`** (NOT `documents`). 경로: `data["pods"][1]["content"]["data"]["docs"]`.
+4. **URL 인코딩 필수**(`urllib.parse.quote`) — 한글·괄호·`&`. Windows 콘솔은 CP949라 한글 깨짐 → **UTF-8 파일로 덤프**해 확인.
+
 **KRX 업무 활용:**
 - 조회공시 후보 → `title:(인수 or 합병 or 매각) and securities.market:(KOSPI or KOSDAQ)`
 - 부정 뉴스 모니터링 → `securities.market:KOSPI and polarity.name:부정`

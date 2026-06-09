@@ -1522,3 +1522,39 @@ year index
      8          실증  0.6166
      9       커넥티드카  0.6121
 ```
+
+---
+
+## ⚠️ 실전 함정 (DocumentSearch 사용 시 반드시 확인)
+
+> 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스
+> 조회 중 검증된 동작 규칙. 같은 시행착오를 반복하지 않기 위해 정리한다.
+> 정식 클라이언트: [`newsscrap/ds_client.py`](../newsscrap/ds_client.py) (1년 자동분할·exceptions 처리 내장).
+
+| # | 함정 | 증상 | 해결 |
+|---|------|------|------|
+| 1 | **검색 기간 1년 한도** | 1년 초과 시 결과가 **통째로 0건**. fields·OR 괄호를 엉뚱하게 의심하게 됨(둘 다 무죄) | 비로그인(`Authorization: Basic`)은 **≤1년**만 허용. 초과분은 **≤1년 청크로 분할** 후 `content_url` 기준 dedup·병합 |
+| 2 | **`data.exceptions` 먼저 보기** | 에러가 **HTTP 200**으로 와서 status code로는 안 보임 | 결과가 비면 **가장 먼저 `data["exceptions"]` 확인**. 1년 초과는 `RequestEntityTooLarge: "Not allowed to search more than 1 year if not logged in"` |
+| 3 | **문서 리스트 키는 `docs`** | `data["documents"]` 조회 → 항상 0건 오인 | 정답 경로: `data["pods"][1]["content"]["data"]["docs"]` (NOT `documents`) |
+| 4 | **URL 인코딩 / CP949** | 한글·괄호가 깨지거나 `&`가 파라미터 구분자로 오인됨 | `urllib.parse.quote` 필수. Windows 콘솔은 CP949라 한글 깨짐 → **결과를 UTF-8 파일로 덤프**해 확인 |
+
+**1년 경계 검증 로그** (`유한양행 and 배당`, 2023 통제):
+
+```
+plain  20230101-20231231 : OK total=29 docs=2
++fields                  : OK total=29 docs=2     # fields 무죄
+OR(배당 or 무상증자)       : OK total=35 docs=3     # OR 무죄(합집합 정상)
+→20240102 (366d)         : OK
+→20240401 (15m)          : FAIL  RequestEntityTooLarge
+→20240701 (18m)          : FAIL
+→20250101 (24m)          : FAIL
+```
+
+**권장 사용** — 직접 파싱 대신 클라이언트를 쓰면 위 4함정을 자동 회피한다:
+
+```python
+from ds_client import document_search   # newsscrap/ds_client.py
+# 2년 범위도 자동 2분할·병합 (RequestEntityTooLarge 회피)
+docs, total = document_search("securities.name:세진중공업 and (배당 or 무상증자)",
+                              date_from="20200101", date_to="20211231")
+```
