@@ -29,3 +29,7 @@ Thumbs.db
 
 # 테스트 산출물
 newsscrap/tests/test_ds_client_output.txt
+
+# wrks.ai 캡처 (세션 쿠키/토큰 포함)
+ds-via-wrksai/**/*.har
+ds-via-wrksai/captures/
