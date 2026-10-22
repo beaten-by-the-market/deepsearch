@@ -6,18 +6,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KRX (Korea Exchange) listed company document search tool using the DeepSearch API. Searches news, research reports, disclosures/IR, and patents, then filters results to identify mentions of KRX-listed companies (KOSPI, KOSDAQ, KONEX).
 
+The repo also holds the DeepSearch Claude skill (`skills/deepsearch/`), distributed as `dist/deepsearch.zip`.
+
 ## Project Structure
 
 ```
 deepsearch/
-├── newsscrap/              # 뉴스 스크랩 서비스
+├── newsscrap/              # 뉴스 스크랩 웹앱 (Streamlit Cloud / Actions 경로에 묶여 있음 — 이름 변경 금지)
 │   ├── deepsearch_query.py
 │   ├── deepsearch_query_api.py
-│   └── *.txt, *.xlsx
-├── docs/                   # API 문서 (GitHub Pages)
-├── .github/workflows/      # GitHub Actions
-└── (향후 다른 서비스 폴더 추가)
+│   ├── ds_client.py        # DocumentSearch 클라이언트
+│   ├── data/               # publishers_575.txt 등 (앱이 런타임에 읽음)
+│   └── tests/
+├── skills/
+│   ├── deepsearch/         # 통합 스킬 소스 (유일한 스킬)
+│   └── build_zip.py        # → dist/deepsearch.zip
+├── dist/                   # 스킬 배포물 (zip은 build_zip.py로만 생성)
+├── docs/
+│   ├── api_guide.html      # GitHub Pages (위치 고정)
+│   └── reference/          # DeepSearch API 레퍼런스 md
+├── notes/                  # 작업 기록/핸드오프
+├── .claude/commands/       # /deepsearch 커맨드 (skills/deepsearch 경로 참조)
+└── .github/workflows/      # GitHub Actions
 ```
+
+## Skill
+
+- Source of truth: `skills/deepsearch/`. After changing it, run `python skills/build_zip.py` and commit `dist/deepsearch.zip` together.
+- `.claude/commands/deepsearch.md` is a condensed copy of the skill for Claude Code in this repo; keep its paths pointing at `skills/deepsearch/`.
 
 ## Architecture (newsscrap)
 
@@ -105,7 +121,7 @@ pip install -r requirements.txt
 
 ## DeepSearch API Documentation
 
-**API 문서 위치:** `docs/` 폴더 내 마크다운 파일들
+**API 문서 위치:** `docs/reference/` 폴더 내 마크다운 파일들
 - `DEEPSEARCH_API_MASTER.md` - API 종합 가이드
 - `3_API함수를_통한_데이터_조회_문서검색.md` - DocumentSearch, DocumentTrends, DocumentAggregation 등
 - `3_API함수를_통한_데이터_조회_국내기업.md` - FindEntity, GetEntitySummary 등

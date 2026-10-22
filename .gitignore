@@ -28,4 +28,4 @@ Thumbs.db
 *.log
 
 # 테스트 산출물
-newsscrap/test_ds_client_output.txt
+newsscrap/tests/test_ds_client_output.txt

@@ -9,7 +9,7 @@ DeepSearch API를 Claude에서 사용할 수 있는 스킬 패키지입니다.
 
 GitHub 저장소에서 `deepsearch.zip` 파일을 다운로드합니다.
 
-1. GitHub 저장소의 `deepsearch-claude-skills배포` 폴더로 이동
+1. GitHub 저장소의 `dist` 폴더로 이동
 2. `deepsearch.zip` 파일 클릭
 3. 우측 상단 `···` 버튼 클릭 → **Download** 선택
 

@@ -1527,9 +1527,9 @@ year index
 
 ## ⚠️ 실전 함정 (DocumentSearch 사용 시 반드시 확인)
 
-> 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스
+> 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../../notes/HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스
 > 조회 중 검증된 동작 규칙. 같은 시행착오를 반복하지 않기 위해 정리한다.
-> 정식 클라이언트: [`newsscrap/ds_client.py`](../newsscrap/ds_client.py) (1년 자동분할·exceptions 처리 내장).
+> 정식 클라이언트: [`newsscrap/ds_client.py`](../../newsscrap/ds_client.py) (1년 자동분할·exceptions 처리 내장).
 
 | # | 함정 | 증상 | 해결 |
 |---|------|------|------|

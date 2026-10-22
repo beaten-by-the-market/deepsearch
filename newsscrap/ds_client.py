@@ -6,7 +6,7 @@ ds_client.py — DeepSearch DocumentSearch 뉴스 검색 클라이언트
 DeepSearch `DocumentSearch` API를 안전하게 호출하기 위한 재사용 모듈.
 KRX 상장사 뉴스/공시/리서치 문서 검색에 사용한다.
 
-⚠️ 실전 함정 4가지 (HANDOFF_DocumentSearch_news_20260610.md 검증됨)
+⚠️ 실전 함정 4가지 (notes/HANDOFF_DocumentSearch_news_20260610.md 검증됨)
 --------------------------------------------------------------------------------
 1. **검색 기간 1년 한도**: 비로그인(Authorization: Basic)은 검색 기간이 1년을
    넘으면 결과를 통째로 못 받는다(`RequestEntityTooLarge`). 증상이 "0건"으로만
@@ -211,7 +211,7 @@ def document_search(query, category="news", section="", count=10,
 
 
 if __name__ == "__main__":
-    # 간단한 수동 점검 (test_ds_client.py가 정식 스모크 테스트)
+    # 간단한 수동 점검 (tests/test_ds_client.py가 정식 스모크 테스트)
     d, t = document_search("securities.name:유한양행 and 배당",
                            date_from="20230101", date_to="20231231", count=3)
     print(f"docs={len(d)} total={t}")

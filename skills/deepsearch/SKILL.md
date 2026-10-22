@@ -188,7 +188,7 @@ python {baseDir}/scripts/read_document.py "API_KEY" 'DocumentSearch(["research"]
 
 ### ⚠️ DocumentSearch 실전 함정 (검증됨 — 같은 시행착오 금지)
 
-> 출처: `HANDOFF_DocumentSearch_news_20260610.md` / 정식 클라이언트: `newsscrap/ds_client.py`
+> 출처: `notes/HANDOFF_DocumentSearch_news_20260610.md` / 정식 클라이언트: `newsscrap/ds_client.py`
 
 1. **기간 1년 한도**: 비로그인(Basic auth)은 검색 기간이 **1년을 넘으면 결과가 통째로 0건**.
    증상이 "0건"이라 fields·OR 괄호를 의심하게 되지만 **둘 다 무죄**. → 초과분은 **≤1년 청크로 분할** 후 `content_url` dedup·병합.
@@ -782,7 +782,7 @@ python {baseDir}/scripts/query_api.py "API_KEY" "쿼리"
 
 **fallback 응답:**
 > "이 요청은 현재 스킬의 범위 밖입니다. 하지만 DeepSearch API의 `{함수명}` 기능으로 처리할 수 있습니다.
-> - 관련 API 문서: docs/DEEPSEARCH_API_MASTER.md
+> - 관련 API 문서: docs/reference/DEEPSEARCH_API_MASTER.md
 > - 추가 스킬이 필요하시면 해당 기능을 포함하여 생성할 수 있습니다."
 
 ## Resources

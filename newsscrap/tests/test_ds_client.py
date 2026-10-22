@@ -10,14 +10,14 @@ ds_client.py 스모크 테스트 — 핸드오프 부록 A 쿼리 재현.
    (test_ds_client_output.txt)로 덤프해 확인한다. 콘솔에는 ASCII 요약만 출력.
 
 실행:
-    python newsscrap/test_ds_client.py
+    python newsscrap/tests/test_ds_client.py
     (newsscrap/.env의 API_KEY 사용. 네트워크 필요.)
 """
 
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ds_client
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),

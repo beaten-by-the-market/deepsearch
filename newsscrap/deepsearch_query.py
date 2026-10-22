@@ -636,7 +636,7 @@ with st.expander("🔍 검색 조건", expanded=True):
             st.caption('딥서치 제공 언론사 목록 (약 575개)')
             try:
                 import os
-                publishers_file = os.path.join(os.path.dirname(__file__), 'publishers_575.txt')
+                publishers_file = os.path.join(os.path.dirname(__file__), 'data', 'publishers_575.txt')
                 with open(publishers_file, 'r', encoding='utf-8') as f:
                     lines = f.readlines()
                 cols = st.columns(3)

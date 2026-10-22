@@ -38,7 +38,7 @@ DocumentSearch(["news"],["economy"],"securities.name:에코프로비엠",count=1
 ```
 → 69건의 뉴스에서 주요 이벤트 날짜/내용 파악
 
-**2단계 - 주가+거래량 조회:** (deepsearch-finance 스킬 사용)
+**2단계 - 주가+거래량 조회:** (Section B 주가/시장 데이터 쿼리)
 ```
 에코프로비엠 종가 거래량 2025-02-01-2025-02-28
 ```

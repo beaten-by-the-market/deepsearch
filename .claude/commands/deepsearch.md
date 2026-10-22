@@ -47,7 +47,7 @@ SimilarKeywords("반도체",max_count=5)
 - 부정 뉴스 → `securities.market:KOSPI and polarity.name:부정`
 - ESG 이슈 → `esg.category.name:지배구조 and esg.polarity.name:부정`
 
-**실행:** `python deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
 
 ---
 
@@ -88,7 +88,7 @@ FindPeopleByName("이재용")
 
 **기업 검색:** `"반도체" 관련 기업`, `"건강기능식품" 산업 기업`, `상장 기업`, `"국민연금" 주주 기업`
 
-**실행:** `python deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
 
 ---
 
@@ -110,12 +110,12 @@ FindPeopleByName("이재용")
 
 **전용 스크립트:**
 ```bash
-python deepsearch/scripts/turnaround_screener.py "$API_KEY" loss 5000
-python deepsearch/scripts/turnaround_screener.py "$API_KEY" profit 1000
-python deepsearch/scripts/market_top_movers.py "$API_KEY" kosdaq 150 2025-02-27
+python skills/deepsearch/scripts/turnaround_screener.py "$API_KEY" loss 5000
+python skills/deepsearch/scripts/turnaround_screener.py "$API_KEY" profit 1000
+python skills/deepsearch/scripts/market_top_movers.py "$API_KEY" kosdaq 150 2025-02-27
 ```
 
-**실행:** `python deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
 
 ---
 
@@ -202,7 +202,7 @@ DocumentSearch(["company"],["disclosure"],"인수 or 합병",...)
 ## 참조 파일
 
 쿼리 작성 시 아래 파일을 참조하세요:
-- API 레퍼런스: `deepsearch/references/api_quick_reference.md`
-- 검증된 사례: `deepsearch/references/verified_examples.md`
-- KRX 업무 가이드: `deepsearch/references/krx_monitoring_guide.md`
-- 가치투자 방법론: `deepsearch/references/value_investing.md`
+- API 레퍼런스: `skills/deepsearch/references/api_quick_reference.md`
+- 검증된 사례: `skills/deepsearch/references/verified_examples.md`
+- KRX 업무 가이드: `skills/deepsearch/references/krx_monitoring_guide.md`
+- 가치투자 방법론: `skills/deepsearch/references/value_investing.md`
