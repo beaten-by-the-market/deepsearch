@@ -1,3 +1,5 @@
+import sys
+from urllib.parse import quote
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import pandas as pd
@@ -61,34 +63,34 @@ url_base = 'https://api.deepsearch.com/v1/compute?input='
 #-----------------------------------------------------------
 
 # 상장시장구분코드 (1=코스피, 2=코스닥, 3=코넥스, 4=제3시장, 9=대상아님)
-# 빈데이터프레임
-listed_df = pd.DataFrame()
+# 예전에는 FindEntity("Financial","1",fields=["market_id"])로 시장별 조회했으나,
+# 2026-11 확인 시 market_id 필드 검색이 동작하지 않고 이름 검색처럼 처리됨(코스피 0건).
+# 자연어 스크리닝 쿼리 "상장 기업"은 전 상장사를 market_id 값과 함께 돌려준다.
+MARKET_NAMES = {'1': 'KOSPI', '2': 'KOSDAQ', '3': 'KONEX'}
 
-for mkt in range(1, 4):
-    query = f"""
-    FindEntity("Financial","{mkt}" ,fields=["market_id"])
-    """
-    url = f'{url_base}{query}'.replace('\n','')
+# 적재 전 최소 건수 (이보다 적으면 API 이상으로 보고 기존 테이블을 건드리지 않음)
+# 2026-11 기준 일반법인 필터 후 대략 KOSPI 800+, KOSDAQ 1,700+
+MIN_ROWS_TOTAL = 2000
+MIN_ROWS_PER_MARKET = {'KOSPI': 500, 'KOSDAQ': 1000}
 
-    # SSL 인증서 검증 비활성화하고 GET 요청 보내기
-    response = requests.get(url, headers=headers, verify=False)
-    
-    # 응답 출력
-    print(response.status_code)
-    
-    # 응답 데이터를 JSON으로 변환하여 저장
-    response_data = response.json()
-    
-    # 'data' 추출
-    data_dict = response_data['data']['pods'][1]['content']['data']
-    loop_df = pd.DataFrame(data_dict)
-    mkt_name = np.where(mkt == 1, 'KOSPI', 
-                        np.where(mkt == 2, 'KOSDAQ',
-                                 np.where(mkt ==3, 'KONEX',
-                                          '기타시장')))
-    loop_df['mkt'] = mkt_name
-    listed_df = pd.concat([listed_df, loop_df])
-    
+query = quote("상장 기업", safe="")
+response = requests.get(f'{url_base}{query}', headers=headers, verify=False, timeout=180)
+print(response.status_code)
+response.raise_for_status()
+response_data = response.json()
+if not response_data.get('success'):
+    raise RuntimeError(f"상장사 목록 조회 실패: {response_data.get('data', {}).get('exceptions')}")
+
+listed_df = pd.DataFrame(response_data['data']['pods'][1]['content']['data'])
+# 값 컬럼 이름은 쿼리 문구를 따라감("상장 기업") → symbol/entity_name 외 컬럼을 market_id로 사용
+value_cols = [c for c in listed_df.columns if c not in ('symbol', 'entity_name', 'date')]
+if len(value_cols) != 1:
+    raise RuntimeError(f"상장사 목록 응답 형식이 예상과 다름: {list(listed_df.columns)}")
+listed_df['mkt'] = listed_df[value_cols[0]].astype(str).map(MARKET_NAMES)
+listed_df = listed_df[listed_df['mkt'].notna() & listed_df['symbol'].str.startswith('KRX:')]
+listed_df = listed_df[['symbol', 'entity_name', 'mkt']].drop_duplicates('symbol')
+print(f"상장사 목록: {listed_df['mkt'].value_counts().to_dict()}")
+
 
 # 기업별 개황 받아오는 과정(NICE코드와 사업자등록번호용)
 # KeyError 발생한 symbol을 저장할 리스트
@@ -182,6 +184,21 @@ if 'company_type_l1' in summary_df.columns:
 else:
     print("⚠️ company_type_l1 컬럼이 없습니다!")
 print(f"{'='*50}\n")
+
+#-----------------------------------------------------------
+# 적재 전 건수 검증: 테이블을 DROP 후 재생성하므로, 결과가 비정상적으로
+# 적으면 기존 데이터를 지키기 위해 여기서 중단(Actions도 실패로 표시됨)
+#-----------------------------------------------------------
+mkt_counts = summary_df['mkt'].value_counts().to_dict() if 'mkt' in summary_df.columns else {}
+problems = []
+if len(summary_df) < MIN_ROWS_TOTAL:
+    problems.append(f"전체 {len(summary_df)}건 < {MIN_ROWS_TOTAL}")
+for mkt, min_rows in MIN_ROWS_PER_MARKET.items():
+    if mkt_counts.get(mkt, 0) < min_rows:
+        problems.append(f"{mkt} {mkt_counts.get(mkt, 0)}건 < {min_rows}")
+if problems:
+    print(f"시장별 건수: {mkt_counts}")
+    sys.exit(f"❌ 적재 중단 (기존 테이블 유지): {', '.join(problems)}")
 
 #-----------------------------------------------------------
 #판다스를 SQL로 저장하기
@@ -290,7 +307,11 @@ try:
         print("Data inserted successfully")
 
 except psycopg2.Error as e:
+    # 에러 시 롤백(트랜잭션이라 DROP도 취소됨)하고 실패 종료해야 Actions에서 감지됨
     print(f"Error: {e}")
+    if connection:
+        connection.rollback()
+    raise
 
 finally:
     if connection:
