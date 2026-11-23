@@ -25,6 +25,9 @@ deepsearch/
 ├── docs/
 │   ├── api_guide.html      # GitHub Pages (위치 고정)
 │   └── reference/          # DeepSearch API 레퍼런스 md
+├── research/               # DeepSearch 데이터 검증 노트 (README.md 색인, 주제별 폴더)
+│   ├── restatement/        # 재무제표 과거값: 원래값 vs 재작성값 (OpenDART 대조)
+│   └── pbr_bps/            # 시장데이터 PBR/BPS 정의
 ├── notes/                  # 작업 기록/핸드오프
 ├── .claude/commands/       # /deepsearch 커맨드 (skills/deepsearch 경로 참조)
 └── .github/workflows/      # GitHub Actions

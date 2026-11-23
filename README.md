@@ -33,6 +33,7 @@ deepsearch/
 ├── docs/
 │   ├── api_guide.html          # GitHub Pages
 │   └── reference/              # DeepSearch API 레퍼런스 문서
+├── research/                   # DeepSearch 데이터 검증 노트 (재작성값, PBR/BPS 정의 등)
 ├── notes/                      # 작업 기록 (핸드오프 등)
 ├── .claude/commands/           # Claude Code 슬래시 커맨드 (/deepsearch)
 ├── .github/workflows/          # GitHub Actions

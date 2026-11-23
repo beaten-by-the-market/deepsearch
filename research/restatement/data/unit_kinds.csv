@@ -1,0 +1,399 @@
+﻿group,stock_code,corp_name,year,fs_div,verdict,kind
+restated_cfs,000020,동화약품,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,000070,삼양홀딩스,2023,CFS,재작성값,재무상태표 포함
+restated_cfs,000150,두산,2019,CFS,재작성값,손익만
+restated_cfs,000230,일동홀딩스,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,000500,가온전선,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,000700,유수홀딩스,2023,CFS,재작성값,손익만
+restated_cfs,000760,이화산업,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,000990,DB하이텍,2022,CFS,원래값,재무상태표 포함
+restated_cfs,001020,페이퍼코리아,2015,CFS,재작성값,손익만
+restated_cfs,001210,금호전기,2018,CFS,재작성값,손익만
+restated_cfs,002020,코오롱,2015,CFS,재작성값,손익만
+restated_cfs,002020,코오롱,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,002020,코오롱,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,002630,오리엔트바이오,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,002880,디와이에이,2021,CFS,재작성값,손익만
+restated_cfs,002880,디와이에이,2022,CFS,재작성값,손익만
+restated_cfs,003090,대웅,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,003300,한일홀딩스,2021,CFS,재작성값,손익만
+restated_cfs,003410,쌍용씨앤이,2015,CFS,재작성값,손익만
+restated_cfs,003550,LG,2016,CFS,재작성값,손익만
+restated_cfs,003960,사조대림,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,004150,한솔홀딩스,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,004690,삼천리,2016,CFS,재작성값,손익만
+restated_cfs,004690,삼천리,2018,CFS,재작성값,손익만
+restated_cfs,004690,삼천리,2021,CFS,재작성값,손익만
+restated_cfs,004870,티웨이홀딩스,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,004920,씨아이테크,2022,CFS,원래값,재무상태표 포함
+restated_cfs,005300,롯데칠성음료,2016,CFS,재작성값,손익만
+restated_cfs,005390,신성통상,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,005440,현대지에프홀딩스,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,005800,신영와코루,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,005950,이수화학,2018,CFS,재작성값,손익만
+restated_cfs,005990,매일홀딩스,2016,CFS,재작성값,손익만
+restated_cfs,006260,LS,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,006490,프리티,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,006840,AK홀딩스,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,006880,신송홀딩스,2017,CFS,재작성값,손익만
+restated_cfs,007070,GS리테일,2022,CFS,재작성값,손익만
+restated_cfs,007460,에이프로젠,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,007540,샘표,2015,CFS,재작성값,손익만
+restated_cfs,007570,일양약품,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,007690,국도화학,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,008040,사조동아원,2016,CFS,재작성값,손익만
+restated_cfs,008060,대덕,2019,CFS,재작성값,손익만
+restated_cfs,008370,원풍,2017,CFS,재작성값,손익만
+restated_cfs,008800,행남사,2019,CFS,원래값,재무상태표 포함
+restated_cfs,009540,HD한국조선해양,2016,CFS,재작성값,손익만
+restated_cfs,009830,한화솔루션,2019,CFS,재작성값,손익만
+restated_cfs,011420,갤럭시아에스엠,2016,CFS,재작성값,손익만
+restated_cfs,011790,SKC,2022,CFS,재작성값,손익만
+restated_cfs,011810,STX,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,012170,아센디오,2019,CFS,재작성값,손익만
+restated_cfs,012320,경동인베스트,2015,CFS,재작성값,손익만
+restated_cfs,012320,경동인베스트,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,012320,경동인베스트,2023,CFS,재작성값,손익만
+restated_cfs,013720,청보,2023,CFS,재작성값,재무상태표 포함
+restated_cfs,013810,스페코,2018,CFS,재작성값,손익만
+restated_cfs,014200,광림,2019,CFS,원래값,재무상태표 포함
+restated_cfs,014790,HL D&I,2020,CFS,재작성값,손익만
+restated_cfs,015260,에이엔피,2018,CFS,원래값,재무상태표 포함
+restated_cfs,015540,에코바이브,2015,CFS,재작성값,손익만
+restated_cfs,015540,에코바이브,2020,CFS,원래값,손익만
+restated_cfs,015860,일진홀딩스,2015,CFS,재작성값,재무상태표 포함
+restated_cfs,015860,일진홀딩스,2023,CFS,원래값,재무상태표 포함
+restated_cfs,016250,SGC E&C,2019,CFS,재작성값,손익만
+restated_cfs,016670,디모아,2022,CFS,재작성값,손익만
+restated_cfs,016880,웅진,2015,CFS,재작성값,손익만
+restated_cfs,016880,웅진,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,017040,광명전기,2015,CFS,재작성값,손익만
+restated_cfs,017370,우신시스템,2019,CFS,원래값,재무상태표 포함
+restated_cfs,018670,SK가스,2016,CFS,재작성값,손익만
+restated_cfs,019770,서연탑메탈,2021,CFS,재작성값,손익만
+restated_cfs,020000,한섬,2018,CFS,원래값,재무상태표 포함
+restated_cfs,020560,아시아나항공,2019,CFS,재작성값,손익만
+restated_cfs,023410,유진기업,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,023460,씨앤에이치,2015,CFS,재작성값,손익만
+restated_cfs,024880,케이피에프,2019,CFS,원래값,재무상태표 포함
+restated_cfs,024880,케이피에프,2022,CFS,원래값,재무상태표 포함
+restated_cfs,026960,동서,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,027740,마니커,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,028300,HLB,2023,CFS,원래값,재무상태표 포함
+restated_cfs,029460,케이씨,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,030520,한컴,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,032040,씨앤에스자산관리,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,032500,케이엠더블유,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,032620,GC메디아이,2022,CFS,재작성값,손익만
+restated_cfs,032680,소프트센,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,032790,엠젠솔루션,2023,CFS,재작성값,손익만
+restated_cfs,032800,판타지오,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,032820,우리기술,2019,CFS,원래값,재무상태표 포함
+restated_cfs,032850,비트컴퓨터,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,032980,바이온,2016,CFS,재작성값,손익만
+restated_cfs,032980,바이온,2017,CFS,재작성값,손익만
+restated_cfs,032980,바이온,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,033110,코너스톤네트웍스,2015,CFS,재작성값,손익만
+restated_cfs,033290,로젠,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,033430,디에스티,2016,CFS,재작성값,손익만
+restated_cfs,033430,디에스티,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,033430,디에스티,2019,CFS,원래값,재무상태표 포함
+restated_cfs,033780,케이티앤지,2020,CFS,원래값,손익만
+restated_cfs,034730,SK,2015,CFS,재작성값,손익만
+restated_cfs,034730,SK,2016,CFS,재작성값,손익만
+restated_cfs,034730,SK,2017,CFS,재작성값,손익만
+restated_cfs,035290,골드앤에스,2021,CFS,재작성값,손익만
+restated_cfs,035420,NAVER,2015,CFS,재작성값,손익만
+restated_cfs,035600,KG이니시스,2016,CFS,재작성값,손익만
+restated_cfs,036190,금화피에스시,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,036200,유니셈,2015,CFS,재작성값,재무상태표 포함
+restated_cfs,036420,콘텐트리중앙,2015,CFS,재작성값,손익만
+restated_cfs,036460,한국가스공사,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,036540,SFA반도체,2023,CFS,재작성값,손익만
+restated_cfs,037270,YG PLUS,2018,CFS,재작성값,손익만
+restated_cfs,037270,YG PLUS,2021,CFS,재작성값,손익만
+restated_cfs,037370,EG,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,037400,우리엔터프라이즈,2015,CFS,재작성값,손익만
+restated_cfs,037400,우리엔터프라이즈,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,038530,케이바이오랩스,2022,CFS,재작성값,손익만
+restated_cfs,038620,위즈코프,2021,CFS,재작성값,손익만
+restated_cfs,039230,제이앤케이인더스트리,2019,CFS,재작성값,손익만
+restated_cfs,039310,세중,2017,CFS,재작성값,손익만
+restated_cfs,039310,세중,2022,CFS,재작성값,손익만
+restated_cfs,039560,다산네트웍스,2016,CFS,재작성값,손익만
+restated_cfs,039560,다산네트웍스,2019,CFS,재작성값,손익만
+restated_cfs,040910,아이씨디,2023,CFS,원래값,재무상태표 포함
+restated_cfs,041590,플래스크,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,042000,카페24,2023,CFS,재작성값,손익만
+restated_cfs,043090,더테크놀로지,2023,CFS,재작성값,손익만
+restated_cfs,043220,티에스넥스젠,2020,CFS,재작성값,손익만
+restated_cfs,043650,국순당,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,043710,코스리거글로벌,2015,CFS,재작성값,손익만
+restated_cfs,046070,코다코,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,046070,코다코,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,047560,이스트소프트,2021,CFS,원래값,손익만
+restated_cfs,049070,인탑스,2016,CFS,재작성값,손익만
+restated_cfs,049120,파인디앤씨,2020,CFS,재작성값,손익만
+restated_cfs,049630,재영솔루텍,2021,CFS,재작성값,손익만
+restated_cfs,050090,비케이홀딩스,2019,CFS,재작성값,손익만
+restated_cfs,050110,캠시스,2023,CFS,원래값,재무상태표 포함
+restated_cfs,050890,쏠리드,2015,CFS,재작성값,재무상태표 포함
+restated_cfs,052020,에스티큐브,2015,CFS,재작성값,손익만
+restated_cfs,053280,예스24,2020,CFS,재작성값,손익만
+restated_cfs,053350,이니텍,2016,CFS,원래값,재무상태표 포함
+restated_cfs,053450,세코닉스,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,053610,프로텍,2022,CFS,원래값,재무상태표 포함
+restated_cfs,053950,경남제약,2022,CFS,원래값,재무상태표 포함
+restated_cfs,054050,NH농우바이오,2022,CFS,재작성값,손익만
+restated_cfs,054220,비츠로시스,2015,CFS,재작성값,손익만
+restated_cfs,054800,아이디스홀딩스,2015,CFS,재작성값,손익만
+restated_cfs,054800,아이디스홀딩스,2016,CFS,재작성값,손익만
+restated_cfs,057500,에스케이엔펄스,2015,CFS,재작성값,손익만
+restated_cfs,058220,아리온테크놀로지,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,058420,제이웨이,2020,CFS,재작성값,손익만
+restated_cfs,058450,한주에이알티,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,059210,메타바이오메드,2018,CFS,재작성값,손익만
+restated_cfs,060540,에스에이티,2015,CFS,재작성값,손익만
+restated_cfs,064090,인크레더블버즈,2019,CFS,재작성값,손익만
+restated_cfs,064090,인크레더블버즈,2021,CFS,원래값,재무상태표 포함
+restated_cfs,064510,유네코,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,064520,테크엘,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,065150,대산F&B,2020,CFS,재작성값,손익만
+restated_cfs,065160,라임,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,065500,오리엔트정공,2022,CFS,재작성값,손익만
+restated_cfs,065510,휴비츠,2022,CFS,재작성값,손익만
+restated_cfs,065560,메티스,2020,CFS,재작성값,손익만
+restated_cfs,065560,메티스,2022,CFS,재작성값,손익만
+restated_cfs,065770,CS,2015,CFS,재작성값,손익만
+restated_cfs,065950,웰크론,2019,CFS,재작성값,손익만
+restated_cfs,066360,체리부로,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,066570,LG전자,2023,CFS,원래값,손익만
+restated_cfs,066900,디에이피,2023,CFS,원래값,재무상태표 포함
+restated_cfs,066980,한성크린텍,2017,CFS,재작성값,손익만
+restated_cfs,068100,케이웨더,2023,CFS,원래값,손익만
+restated_cfs,068290,삼성출판사,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,068400,에스케이렌터카,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,071460,위니아,2017,CFS,원래값,재무상태표 포함
+restated_cfs,072950,빛샘전자,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,074610,이엔플러스,2016,CFS,재작성값,손익만
+restated_cfs,075580,세진중공업,2015,CFS,재작성값,손익만
+restated_cfs,076080,웰크론한텍,2017,CFS,재작성값,손익만
+restated_cfs,077280,한컴지엠디,2016,CFS,재작성값,손익만
+restated_cfs,077360,덕산하이메탈,2015,CFS,재작성값,손익만
+restated_cfs,077360,덕산하이메탈,2022,CFS,재작성값,손익만
+restated_cfs,078860,아이오케이이엔엠,2021,CFS,재작성값,손익만
+restated_cfs,079190,케스피온,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,079370,제우스,2021,CFS,원래값,재무상태표 포함
+restated_cfs,080530,코디,2015,CFS,재작성값,손익만
+restated_cfs,081000,일진다이아,2017,CFS,재작성값,손익만
+restated_cfs,082210,옵트론텍,2019,CFS,재작성값,손익만
+restated_cfs,082660,코스나인,2017,CFS,재작성값,손익만
+restated_cfs,083790,CG인바이츠,2015,CFS,재작성값,손익만
+restated_cfs,084110,휴온스글로벌,2015,CFS,재작성값,손익만
+restated_cfs,084670,동양고속,2018,CFS,재작성값,손익만
+restated_cfs,086960,MDS테크,2018,CFS,재작성값,손익만
+restated_cfs,088260,이리츠코크렙,2020,CFS,원래값,재무상태표 포함
+restated_cfs,089140,넥스턴앤롤코리아,2022,CFS,재작성값,손익만
+restated_cfs,089230,THE E&M,2023,CFS,재작성값,재무상태표 포함
+restated_cfs,089850,유비벨록스,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,089860,롯데렌탈,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,090460,비에이치,2022,CFS,원래값,재무상태표 포함
+restated_cfs,092200,디아이씨,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,093190,빅솔론,2023,CFS,원래값,재무상태표 포함
+restated_cfs,094840,슈프리마에이치큐,2016,CFS,재작성값,손익만
+restated_cfs,095270,웨이브일렉트로,2020,CFS,재작성값,손익만
+restated_cfs,095340,ISC,2017,CFS,재작성값,손익만
+restated_cfs,095660,네오위즈,2015,CFS,재작성값,손익만
+restated_cfs,096640,멜파스,2019,CFS,재작성값,재무상태표 포함
+restated_cfs,096760,JW홀딩스,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,096770,SK이노베이션,2017,CFS,재작성값,손익만
+restated_cfs,101000,KS인더스트리,2023,CFS,원래값,손익만
+restated_cfs,101670,하이드로리튬,2020,CFS,원래값,재무상태표 포함
+restated_cfs,102710,이엔에프테크놀로지,2016,CFS,재작성값,손익만
+restated_cfs,104540,코렌텍,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,106240,파인테크닉스,2015,CFS,재작성값,손익만
+restated_cfs,108670,LX하우시스,2021,CFS,재작성값,손익만
+restated_cfs,109070,주성코퍼레이션,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,109070,주성코퍼레이션,2020,CFS,원래값,재무상태표 포함
+restated_cfs,109960,앱토크롬,2016,CFS,재작성값,손익만
+restated_cfs,112610,씨에스윈드,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,115160,휴맥스,2023,CFS,재작성값,손익만
+restated_cfs,115390,락앤락,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,115450,HLB테라퓨틱스,2018,CFS,재작성값,손익만
+restated_cfs,115480,씨유메디칼,2022,CFS,원래값,재무상태표 포함
+restated_cfs,115530,씨엔플러스,2019,CFS,원래값,재무상태표 포함
+restated_cfs,118000,메타케어,2023,CFS,원래값,손익만
+restated_cfs,120110,코오롱인더,2018,CFS,재작성값,손익만
+restated_cfs,122640,예스티,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,122870,와이지엔터테인먼트,2018,CFS,재작성값,손익만
+restated_cfs,122990,와이솔,2018,CFS,재작성값,손익만
+restated_cfs,123570,이엠넷,2015,CFS,재작성값,손익만
+restated_cfs,127160,매직마이크로,2019,CFS,재작성값,손익만
+restated_cfs,127710,아시아경제,2016,CFS,재작성값,손익만
+restated_cfs,131090,시큐브,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,131100,티엔엔터테인먼트,2015,CFS,재작성값,손익만
+restated_cfs,136490,선진,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,136510,스마트솔루션즈,2020,CFS,재작성값,손익만
+restated_cfs,136510,스마트솔루션즈,2021,CFS,원래값,손익만
+restated_cfs,137310,에스디바이오센서,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,138690,엘아이에스,2017,CFS,재작성값,손익만
+restated_cfs,139050,비에프랩스,2020,CFS,재작성값,손익만
+restated_cfs,139480,이마트,2016,CFS,재작성값,손익만
+restated_cfs,144960,뉴파워프라즈마,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,145210,다이나믹디자인,2023,CFS,재작성값,손익만
+restated_cfs,151860,KG에코솔루션,2021,CFS,재작성값,손익만
+restated_cfs,151910,퓨처코어,2015,CFS,재작성값,재무상태표 포함
+restated_cfs,155900,바다로19호선박투자회사,2021,CFS,원래값,손익만
+restated_cfs,156100,엘앤케이바이오,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,159580,제로투세븐,2018,CFS,재작성값,손익만
+restated_cfs,159910,에코글로우,2017,CFS,재작성값,손익만
+restated_cfs,160550,NEW,2020,CFS,재작성값,손익만
+restated_cfs,161390,한국타이어앤테크놀로지,2021,CFS,원래값,재무상태표 포함
+restated_cfs,161890,한국콜마,2019,CFS,재작성값,손익만
+restated_cfs,166480,코아스템켐온,2022,CFS,원래값,재무상태표 포함
+restated_cfs,170900,동아에스티,2015,CFS,재작성값,손익만
+restated_cfs,170900,동아에스티,2023,CFS,원래값,재무상태표 포함
+restated_cfs,170920,엘티씨,2023,CFS,원래값,재무상태표 포함
+restated_cfs,177830,파버나인,2022,CFS,원래값,재무상태표 포함
+restated_cfs,178780,일월지엠엘,2016,CFS,원래값,재무상태표 포함
+restated_cfs,178780,일월지엠엘,2019,CFS,재작성값,손익만
+restated_cfs,180640,한진칼,2017,CFS,원래값,재무상태표 포함
+restated_cfs,182400,엔케이젠바이오텍코리아,2023,CFS,원래값,손익만
+restated_cfs,189300,인텔리안테크,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,189690,포시에스,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,190510,나무가,2018,CFS,재작성값,손익만
+restated_cfs,193250,링크드,2018,CFS,재작성값,손익만
+restated_cfs,194510,넥스쳐,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,200670,휴메딕스,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,200670,휴메딕스,2018,CFS,재작성값,재무상태표 포함
+restated_cfs,204630,로아앤코홀딩스,2017,CFS,재작성값,재무상태표 포함
+restated_cfs,204630,로아앤코홀딩스,2018,CFS,재작성값,손익만
+restated_cfs,206400,아인스팩씨엔에스,2018,CFS,재작성값,손익만
+restated_cfs,208350,지란지교시큐리티,2020,CFS,원래값,손익만
+restated_cfs,208710,포톤,2021,CFS,재작성값,손익만
+restated_cfs,210980,SK디앤디,2023,CFS,재작성값,손익만
+restated_cfs,213500,한솔제지,2017,CFS,재작성값,손익만
+restated_cfs,214310,로아앤코,2016,CFS,재작성값,재무상태표 포함
+restated_cfs,215000,골프존,2016,CFS,재작성값,손익만
+restated_cfs,215100,로보로보,2019,CFS,재작성값,손익만
+restated_cfs,217480,에스디생명공학,2022,CFS,재작성값,손익만
+restated_cfs,223310,사토시홀딩스,2018,CFS,재작성값,손익만
+restated_cfs,226440,시스네오텍,2023,CFS,재작성값,손익만
+restated_cfs,226950,올릭스,2021,CFS,원래값,손익만
+restated_cfs,227100,프로브잇,2020,CFS,재작성값,손익만
+restated_cfs,227100,프로브잇,2022,CFS,재작성값,손익만
+restated_cfs,234300,에스트래픽,2021,CFS,재작성값,손익만
+restated_cfs,236810,엔비티,2023,CFS,재작성값,손익만
+restated_cfs,238090,앤디포스,2020,CFS,재작성값,손익만
+restated_cfs,239340,이스트에이드,2020,CFS,원래값,손익만
+restated_cfs,241770,메카로,2021,CFS,재작성값,손익만
+restated_cfs,250000,보라티알,2020,CFS,원래값,재무상태표 포함
+restated_cfs,259960,크래프톤,2022,CFS,재작성값,재무상태표 포함
+restated_cfs,271560,오리온,2017,CFS,재작성값,손익만
+restated_cfs,272210,한화시스템,2022,CFS,재작성값,손익만
+restated_cfs,276040,스코넥,2023,CFS,재작성값,손익만
+restated_cfs,293940,신한알파리츠,2021,CFS,원래값,재무상태표 포함
+restated_cfs,298540,더네이쳐홀딩스,2020,CFS,재작성값,재무상태표 포함
+restated_cfs,304360,에스바이오메딕스,2023,CFS,재작성값,재무상태표 포함
+restated_cfs,321550,티움바이오,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,321820,아티스트컴퍼니,2022,CFS,재작성값,손익만
+restated_cfs,331520,밸로프,2022,CFS,재작성값,손익만
+restated_cfs,334890,이지스밸류플러스리츠,2023,CFS,원래값,재무상태표 포함
+restated_cfs,337930,젝시믹스,2021,CFS,재작성값,손익만
+restated_cfs,337930,젝시믹스,2022,CFS,재작성값,손익만
+restated_cfs,348950,제이알글로벌리츠,2023,CFS,원래값,재무상태표 포함
+restated_cfs,357880,SKAI,2023,CFS,재작성값,손익만
+restated_cfs,377190,디앤디플랫폼리츠,2022,CFS,원래값,재무상태표 포함
+restated_cfs,383220,F&F,2021,CFS,재작성값,재무상태표 포함
+restated_cfs,400760,NH올원리츠,2023,CFS,원래값,재무상태표 포함
+restated_cfs,404990,신한서부티엔디리츠,2021,CFS,원래값,재무상태표 포함
+restated_cfs,404990,신한서부티엔디리츠,2023,CFS,원래값,재무상태표 포함
+restated_ofs,000910,유니온,2015,OFS,원래값,손익만
+restated_ofs,001080,MH머트리얼즈,2023,OFS,재작성값,재무상태표 포함
+restated_ofs,001770,SHD,2017,OFS,재작성값,재무상태표 포함
+restated_ofs,002420,우양피앤엘,2023,OFS,재작성값,손익만
+restated_ofs,002630,오리엔트바이오,2021,OFS,원래값,재무상태표 포함
+restated_ofs,002700,신일전자,2016,OFS,원래값,재무상태표 포함
+restated_ofs,003120,일성아이에스,2022,OFS,재작성값,재무상태표 포함
+restated_ofs,003650,미창석유공업,2016,OFS,재작성값,재무상태표 포함
+restated_ofs,005500,삼진제약,2018,OFS,재작성값,재무상태표 포함
+restated_ofs,005980,성지건설,2016,OFS,재작성값,손익만
+restated_ofs,006050,국영지앤엠,2017,OFS,원래값,손익만
+restated_ofs,007390,네이처셀,2021,OFS,원래값,손익만
+restated_ofs,011330,유니켐,2022,OFS,재작성값,재무상태표 포함
+restated_ofs,012170,아센디오,2015,OFS,원래값,손익만
+restated_ofs,013000,세우글로벌,2019,OFS,재작성값,재무상태표 포함
+restated_ofs,013000,세우글로벌,2020,OFS,원래값,손익만
+restated_ofs,014710,사조씨푸드,2015,OFS,원래값,재무상태표 포함
+restated_ofs,018310,삼목에스폼,2017,OFS,재작성값,손익만
+restated_ofs,019490,엑시큐어하이트론,2019,OFS,원래값,재무상태표 포함
+restated_ofs,019490,엑시큐어하이트론,2021,OFS,원래값,재무상태표 포함
+restated_ofs,020120,키다리스튜디오,2015,OFS,원래값,재무상태표 포함
+restated_ofs,020120,키다리스튜디오,2016,OFS,재작성값,손익만
+restated_ofs,020120,키다리스튜디오,2017,OFS,원래값,재무상태표 포함
+restated_ofs,021040,대호특수강,2020,OFS,재작성값,재무상태표 포함
+restated_ofs,021320,KCC건설,2018,OFS,원래값,손익만
+restated_ofs,029960,코엔텍,2018,OFS,원래값,재무상태표 포함
+restated_ofs,035480,글로앤웰,2016,OFS,원래값,재무상태표 포함
+restated_ofs,036030,케이티알파,2019,OFS,원래값,재무상태표 포함
+restated_ofs,036030,케이티알파,2023,OFS,재작성값,손익만
+restated_ofs,038530,케이바이오랩스,2015,OFS,재작성값,재무상태표 포함
+restated_ofs,042370,비츠로테크,2016,OFS,원래값,재무상태표 포함
+restated_ofs,043360,디지아이,2015,OFS,재작성값,손익만
+restated_ofs,049470,비트플래닛,2020,OFS,원래값,재무상태표 포함
+restated_ofs,049470,비트플래닛,2021,OFS,재작성값,손익만
+restated_ofs,050320,에스에이치엔엘,2018,OFS,재작성값,손익만
+restated_ofs,050860,아세아텍,2017,OFS,원래값,재무상태표 포함
+restated_ofs,056080,유진로봇,2022,OFS,재작성값,손익만
+restated_ofs,057680,티사이언티픽,2017,OFS,재작성값,손익만
+restated_ofs,064520,테크엘,2022,OFS,재작성값,손익만
+restated_ofs,065620,제낙스,2019,OFS,재작성값,재무상태표 포함
+restated_ofs,067830,세이브존I&C,2019,OFS,원래값,재무상태표 포함
+restated_ofs,069920,엑시온그룹,2021,OFS,원래값,재무상태표 포함
+restated_ofs,073190,듀오백,2022,OFS,원래값,재무상태표 포함
+restated_ofs,077970,STX엔진,2015,OFS,재작성값,손익만
+restated_ofs,079550,LIG디펜스앤에어로스페이스,2017,OFS,재작성값,재무상태표 포함
+restated_ofs,079550,LIG디펜스앤에어로스페이스,2018,OFS,재작성값,손익만
+restated_ofs,086250,화신테크,2020,OFS,원래값,재무상태표 포함
+restated_ofs,089790,제이티,2018,OFS,재작성값,손익만
+restated_ofs,090730,심팩메탈,2015,OFS,원래값,재무상태표 포함
+restated_ofs,095700,제넥신,2019,OFS,재작성값,재무상태표 포함
+restated_ofs,096040,이트론,2016,OFS,재작성값,손익만
+restated_ofs,100840,SNT에너지,2018,OFS,재작성값,손익만
+restated_ofs,101670,하이드로리튬,2022,OFS,원래값,재무상태표 포함
+restated_ofs,102210,트레스,2020,OFS,재작성값,재무상태표 포함
+restated_ofs,104480,티케이케미칼,2021,OFS,원래값,재무상태표 포함
+restated_ofs,115610,이미지스,2019,OFS,원래값,재무상태표 포함
+restated_ofs,127710,아시아경제,2020,OFS,원래값,재무상태표 포함
+restated_ofs,127710,아시아경제,2021,OFS,원래값,재무상태표 포함
+restated_ofs,131180,딜리,2023,OFS,원래값,재무상태표 포함
+restated_ofs,141080,리가켐바이오,2021,OFS,재작성값,재무상태표 포함
+restated_ofs,145270,케이탑리츠,2015,OFS,원래값,손익만
+restated_ofs,150840,인트로메딕,2017,OFS,재작성값,손익만
+restated_ofs,151860,KG에코솔루션,2018,OFS,원래값,재무상태표 포함
+restated_ofs,170790,파이오링크,2017,OFS,원래값,재무상태표 포함
+restated_ofs,175140,아고스,2020,OFS,원래값,손익만
+restated_ofs,179290,엠아이텍,2020,OFS,원래값,손익만
+restated_ofs,189860,서전기전,2016,OFS,원래값,재무상태표 포함
+restated_ofs,195440,퓨전,2018,OFS,재작성값,손익만
+restated_ofs,195440,퓨전,2020,OFS,원래값,재무상태표 포함
+restated_ofs,197140,디지캡,2023,OFS,원래값,재무상태표 포함
+restated_ofs,203650,드림시큐리티,2016,OFS,재작성값,재무상태표 포함
+restated_ofs,208370,셀바스헬스케어,2015,OFS,재작성값,재무상태표 포함
+restated_ofs,208860,다산디엠씨,2022,OFS,재작성값,재무상태표 포함
+restated_ofs,220260,켐트로스,2016,OFS,재작성값,재무상태표 포함
+restated_ofs,226350,아이엠텍,2019,OFS,원래값,재무상태표 포함
+restated_ofs,271980,제일약품,2019,OFS,재작성값,재무상태표 포함
+restated_ofs,294570,쿠콘,2023,OFS,재작성값,재무상태표 포함
+restated_ofs,305090,마이크로디지탈,2022,OFS,원래값,손익만
+restated_ofs,307180,아이엘,2018,OFS,재작성값,재무상태표 포함
+restated_ofs,307750,국전,2021,OFS,원래값,재무상태표 포함
+restated_ofs,330590,롯데리츠,2019,OFS,원래값,재무상태표 포함
+restated_ofs,330590,롯데리츠,2021,OFS,원래값,재무상태표 포함
+restated_ofs,335890,비올메디컬,2022,OFS,재작성값,재무상태표 포함
+restated_ofs,338100,NH프라임리츠,2020,OFS,원래값,재무상태표 포함
+restated_ofs,373200,엑스플러스,2022,OFS,재작성값,재무상태표 포함
+restated_ofs,376300,디어유,2023,OFS,재작성값,손익만
+restated_ofs,417310,코람코더원리츠,2023,OFS,원래값,재무상태표 포함
+restated_ofs,451800,한화리츠,2023,OFS,원래값,재무상태표 포함
+restated_ofs,456040,OCI,2023,OFS,원래값,재무상태표 포함
