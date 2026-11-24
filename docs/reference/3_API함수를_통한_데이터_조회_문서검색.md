@@ -204,7 +204,7 @@ updated_at: "2020-03-26T13:55:00.000000"
 ## ⚠️ 실전 함정 (레포 검증 메모 — 공식 문서 아님)
 
 > 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../../notes/HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스 조회 중 검증. 2026-11-25 재확인.
-> 자동 처리 클라이언트: [`skills/deepsearch/scripts/query_api.py`](../../skills/deepsearch/scripts/query_api.py) (1년 자동 분할·exceptions 표시·큰 결과 파일 저장), [`newsscrap/ds_client.py`](../../newsscrap/ds_client.py) (Python 모듈).
+> 자동 처리 클라이언트: [`skills/deepsearch/scripts/query_api.py`](../../skills/deepsearch/scripts/query_api.py) (1년 자동 분할·exceptions 표시·큰 결과 파일 저장), [`scenarios/_tools/ds_helper.py`](../../scenarios/_tools/ds_helper.py) (노트북용 `doc_search`·`doc_trends`: 총건수 기준 페이지 넘김, 빈 결과 처리).
 
 | # | 함정 | 증상 | 해결 |
 |---|------|------|------|

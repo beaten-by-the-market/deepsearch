@@ -1,6 +1,6 @@
-# DeepSearch KRX 상장사 문서검색
+# DeepSearch KRX 상장사 데이터 도구
 
-DeepSearch API를 활용한 KRX 상장사(KOSPI, KOSDAQ, KONEX) 관련 문서 검색 서비스와, DeepSearch 데이터를 Claude Code에서 쓰기 위한 스킬·레퍼런스입니다.
+DeepSearch API로 KRX 상장사(KOSPI, KOSDAQ, KONEX) 데이터를 다루기 위한 Claude Code 스킬, API 레퍼런스, 데이터 검증 노트, Colab 분석 시나리오 노트북입니다.
 
 ## 빠른 시작: DeepSearch 데이터를 쓰려면 (에이전트·처음 보는 사람용)
 
@@ -11,48 +11,36 @@ DeepSearch API를 활용한 KRX 상장사(KOSPI, KOSDAQ, KONEX) 관련 문서 �
    - DocumentSearch 기간이 1년을 넘으면 자동으로 나눠 호출합니다.
    - 결과가 크면(2만 자 초과) 파일로 저장하고 경로와 미리보기만 출력합니다.
 4. SKILL.md에 없는 함수는 [docs/reference/DEEPSEARCH_API_MASTER.md](docs/reference/DEEPSEARCH_API_MASTER.md)를 보세요. 17절에 전체 함수 129개와 이 키로 호출해 본 결과(✅/⚠️/❌)가 있습니다. 파라미터 상세는 [docs/reference/](docs/reference/) 원문을 grep하세요.
-5. 분석·백테스트 전에 [research/](research/)를 확인하세요. 재무제표 재작성값, BPS look-ahead, 수정주가 검증 노트가 있습니다.
+5. 분석·백테스트 전에 [research/](research/)를 확인하세요. 재무제표 재작성값, BPS look-ahead, 수정주가, DeepSearch에 없는 데이터를 검증한 노트가 있습니다.
+6. 바로 돌려 볼 분석 예시는 [scenarios/](scenarios/README.md)에 있습니다(Colab에서 열기 배지).
 
 - **현재 구독으로 쓸 수 없는 것:** DeepSearch v2 REST(`api-v2.deepsearch.com`), 해외기업, 챗딥서치, 채권·통계청 함수
-- **이 작업에는 읽지 않아도 되는 것:** `newsscrap/`(뉴스 스크랩 웹앱), `notes/`(작업 기록), `docs/api_guide.html`
+- **DeepSearch에 없는 데이터:** 투자자별 수급, 공매도·대차·신용, 지수선물, ETF NAV, 장중 데이터([research/data_gaps](research/data_gaps/README.md))
+- **이 작업에는 읽지 않아도 되는 것:** `notes/`(작업 기록), `docs/api_guide.html`
 
 ## 구성
 
-이 레포에는 두 가지 산출물이 있습니다.
-
-### 1. newsscrap - 뉴스 스크랩 웹앱
-KRX 상장사가 언급된 뉴스, 증권사보고서, 공시/IR, 특허 문서를 검색합니다.
-
-- **웹앱**: Streamlit 기반 검색 인터페이스
-- **데이터 파이프라인**: 상장사 정보를 Supabase DB에 적재 (매일 오전 7시 KST) — **2026-11 중단** (DB 미사용, Actions 비활성)
-
-### 2. skills/deepsearch - Claude 스킬
-DeepSearch API를 Claude에서 쓰기 위한 통합 스킬(문서검색, 기업재무, 스크리닝, 멀티스텝 분석).
-
-### 3. docs/reference - DeepSearch API 레퍼런스
-공식 가이드(https://help.deepsearch.com/dp)를 옮긴 원문과 요약·함수별 호출 결과. `sync_from_gitbook.py`로 다시 받을 수 있습니다([docs/reference/README.md](docs/reference/README.md)).
-Claude Code에서 쓰는 방식이며, 설치 방법은 아래 "스킬 설치"를 참고하세요.
+| 폴더 | 내용 |
+|---|---|
+| [skills/deepsearch](skills/deepsearch/SKILL.md) | DeepSearch API를 Claude Code에서 쓰는 통합 스킬(문서검색, 기업재무, 스크리닝, 멀티스텝 분석) |
+| [docs/reference](docs/reference/README.md) | 공식 가이드(https://help.deepsearch.com/dp) 원문과 요약·함수별 호출 결과. `sync_from_gitbook.py`로 다시 받음 |
+| [research](research/README.md) | DeepSearch 값이 정확히 무엇인지 실제 호출로 검증한 노트 |
+| [scenarios](scenarios/README.md) | 분석 시나리오 노트북(Colab 기준, 실행 결과 포함). KOSCOM CHECK API 케이스 시나리오를 DeepSearch로 각색·확장했고, 뉴스·공시·IR·리포트·특허 가져오기와 상장사로 거르기, 종목 한 장 보기도 들어 있음 |
 
 ## 프로젝트 구조
 
 ```
 deepsearch/
-├── newsscrap/                  # 뉴스 스크랩 웹앱
-│   ├── deepsearch_query.py     # Streamlit 웹앱
-│   ├── deepsearch_query_api.py # 데이터 파이프라인
-│   ├── ds_client.py            # DocumentSearch 클라이언트 (1년 분할, 예외 처리)
-│   ├── data/                   # 언론사 목록, 관심종목 서식
-│   └── tests/                  # ds_client 스모크 테스트
 ├── skills/
 │   └── deepsearch/             # Claude 스킬 소스 (SKILL.md, references, scripts, requirements.txt)
 ├── docs/
 │   ├── api_guide.html          # GitHub Pages
 │   └── reference/              # DeepSearch API 레퍼런스 (README.md, MASTER 요약, 원문, 동기화 스크립트)
-├── research/                   # DeepSearch 데이터 검증 노트 (재작성값, PBR/BPS 정의, 수정주가)
+├── research/                   # DeepSearch 데이터 검증 노트
+├── scenarios/                  # 분석 시나리오 노트북 (README.md 색인, _src 원본, _tools 빌더)
 ├── notes/                      # 작업 기록 (핸드오프 등)
 ├── .claude/commands/           # Claude Code 슬래시 커맨드 (/deepsearch)
-├── .github/workflows/          # GitHub Actions
-└── requirements.txt
+└── requirements.txt            # 스크립트·research·노트북 빌드용
 ```
 
 ## 스킬 설치 (Claude Code)
@@ -69,42 +57,25 @@ API_KEY=your_base64_encoded_api_key
 
 > Claude.ai 일반 채팅용 zip 업로드 방식은 더 이상 제공하지 않습니다(2026-11-25 제거, git 이력에서 복원 가능).
 
-## 로컬 실행
+## 시나리오 노트북
+
+- **Colab:** [scenarios/README.md](scenarios/README.md)의 노트북을 열고 "Colab에서 열기"를 누릅니다. Secrets에 `DEEPSEARCH_API_KEY`를 넣으면 됩니다.
+- **로컬에서 다시 빌드:** 아래 명령으로 노트북을 다시 만들고 실행합니다.
 
 ```bash
-# 가상환경 설정
 python -m venv venv
 venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-
-# 환경변수 설정 (.env 파일 생성)
-API_KEY=your_deepsearch_api_key
-DB_HOST=your_db_host
-DB_PORT=5432
-DB_NAME=postgres
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_USER_CRUD=your_crud_user
-DB_PASSWORD_CRUD=your_crud_password
-
-# 웹앱 실행
-streamlit run newsscrap/deepsearch_query.py
+python scenarios/_tools/build.py 5_data_lookup/07   # 원본(_src) → 실행된 .ipynb
 ```
 
 ## 배포
 
 | 서비스 | 플랫폼 | 설명 |
 |--------|--------|------|
-| 웹앱 | Streamlit Cloud | `newsscrap/deepsearch_query.py` |
 | API 문서 | GitHub Pages | `docs/api_guide.html` |
-| 데이터 업데이트 | GitHub Actions | 매일 07:00 KST 자동 실행 — 2026-11 중단 |
 
-## 기술 스택
-
-- **Frontend**: Streamlit, Plotly
-- **Backend**: Python, DeepSearch API
-- **Database**: PostgreSQL (Supabase) — 2026-11 중단
-- **CI/CD**: GitHub Actions
+예전의 Streamlit 뉴스 스크랩 웹앱(`newsscrap/`)과 Supabase 적재 파이프라인·GitHub Actions는 2026-11-25에 제거했습니다(git 이력에서 복원 가능). 기능은 시나리오 5-08~13, 2-13, 2-14로 옮겼고, 각 문서에 웹앱으로 다시 만들 때의 방향을 적었습니다.
 
 ## 라이선스
 

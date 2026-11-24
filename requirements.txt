@@ -1,10 +1,10 @@
+# 스킬 스크립트·research 검증·시나리오 노트북 빌드용
 pandas
-streamlit>=1.32.0
-requests
-psycopg2-binary
-tqdm
 numpy
+requests
 python-dotenv
-openpyxl
-plotly
-altair>=5.0.0
+matplotlib
+nbformat
+nbclient
+ipykernel
+pymupdf
