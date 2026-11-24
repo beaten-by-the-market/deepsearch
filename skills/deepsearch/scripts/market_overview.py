@@ -38,6 +38,10 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 URL_BASE = 'https://api.deepsearch.com/v1/compute?input='
 
+# DeepSearch 주가는 수정주가뿐 (research/price_adjustment/README.md). 결과에 그대로 실어 안내하게 한다.
+PRICE_BASIS_NOTICE = ('주가 기준: 종가·시가·고가·저가는 수정주가입니다(액면분할·증자 소급 반영, 배당 미반영). '
+                      '거래량·시가총액은 당일 실제 값입니다.')
+
 
 def _normalize_api_key(api_key):
     """API 키를 base64 형식으로 정규화. raw(id:secret) 형식이면 자동 인코딩."""
@@ -567,6 +571,7 @@ def build_report(api_key, date_str):
         'NICE평가정보 재무데이터',
         '국내 주요 언론사 (매일경제, 한경 등)',
     ]
+    report['price_basis_notice'] = PRICE_BASIS_NOTICE
 
     return report
 

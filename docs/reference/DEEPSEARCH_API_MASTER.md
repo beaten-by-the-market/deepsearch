@@ -724,3 +724,9 @@ GetHistoricalTopic(category, section, topic_uid, sorts=None,
    - 자연어 쿼리(`삼성전자 매출액 2020-2024`)보다 `GetFinancialStatements` 함수가 안정적
    - 주가/시장 데이터(종가, PER, PBR, 시가총액)는 자연어 쿼리 사용 가능
    - `GetFinancialStatements`에서 기업명에 따옴표를 넣으면 403 오류 발생
+
+7. **주가는 수정주가뿐 (원주가 옵션 없음)** — 검증 2026-11-25, [research/price_adjustment](../../research/price_adjustment/README.md)
+   - 시가·고가·저가·종가는 액면분할·무상증자·유상증자로 소급 수정된 값입니다(배당은 미반영). `GetStockPrices`에 원주가를 고르는 파라미터나 컬럼은 없습니다.
+   - 거래량·거래대금·상장주식수·시가총액은 수정되지 않은 당일 값입니다. 원주가 = `market_cap ÷ shares_outstanding`
+   - 자연어 주가 쿼리는 2020-01-02 이후만 나옵니다. 그 이전 범위는 오류 없이 오늘 값 1행을 돌려줍니다. 과거는 `GetStockPrices`를 쓰세요.
+   - 주가를 사용자에게 보여줄 때는 수정주가라는 점을 먼저 안내합니다.

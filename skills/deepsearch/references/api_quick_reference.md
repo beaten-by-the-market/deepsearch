@@ -111,6 +111,13 @@ GetFinancialStatements(삼성전자, report_ids="BalanceSheet") # 특정 제표�
 기업명 매출액 영업이익 당기순이익       ← GetFinancialStatements 사용
 ```
 
+**⚠️ 주가 기준 (검증 2026-11-25, 자세한 내용은 SKILL.md Section B "주가 데이터 함정"):**
+- 시가·고가·저가·종가는 **수정주가뿐**입니다. 원주가 옵션은 없고, `adjusted=` 같은 파라미터나 `adj_close` 같은 컬럼은 400 에러입니다.
+- 거래량·거래대금·상장주식수·시가총액은 **수정되지 않은 당일 값**입니다. 원주가 = `market_cap ÷ shares_outstanding`
+- 배당은 수정하지 않습니다. 종가로 계산한 수익률은 가격수익률입니다.
+- 자연어 쿼리는 **2020-01-02 이후만** 나옵니다. 그 이전 범위를 넣으면 오류 없이 오늘 값 1행이 옵니다. 2020년 이전은 `GetStockPrices(종목, columns=[...], date_from=..., date_to=...)`를 쓰세요.
+- 주가를 보여주는 답변에는 수정주가 안내를 데이터보다 먼저 넣으세요 (SKILL.md 규칙 3).
+
 **데이터 유형:**
 - 주가/시장 (자연어 OK): 종가, 시가, 고가, 저가, 시가총액, 거래량, PER, PBR, EPS, BPS, DPS
 - 재무제표 (**GetFinancialStatements 필수**): 매출액, 영업이익, 당기순이익, 자산, 부채, 자본 등

@@ -70,6 +70,15 @@ GetFinancialStatements(SK하이닉스, report_type="IFRS", consolidated=True, is
 ```
 → 20거래일
 
+## 사례 10-1: 2020년 이전 주가 + 원주가 복원 (GetStockPrices)
+```
+GetStockPrices(KRX:005930, columns=["close","volume","shares_outstanding","market_cap"], date_from=2018-04-25, date_to=2018-05-08)
+```
+→ 8행. 2018-04-26 close 52,140은 수정주가(원주가 2,607,000 ÷ 50). volume·shares_outstanding은 분할 전 실제 값
+→ 원주가 = market_cap ÷ shares_outstanding = 2,607,000
+→ 같은 범위를 자연어(`삼성전자 종가 2018-04-25-2018-05-08`)로 넣으면 **오늘 값 1행**만 옴 (자연어는 2020-01-02 이후만)
+→ 원주가 옵션(`adjusted=False`, `columns=["adj_close"]` 등)은 없음, 모두 400
+
 ## 사례 11: 복수 기업 재무 비교 (GetFinancialStatements 개별 호출)
 ```
 GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)

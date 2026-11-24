@@ -1747,6 +1747,11 @@ date       symbol      entity_name   close
 
 ```
 
+> **[레포 검증 메모 2026-11-25 — 공식 문서 아님]** 근거: [research/price_adjustment](../../research/price_adjustment/README.md)
+> - 반환 컬럼: `open, high, low, close, volume, value, change, change_rate, shares_outstanding, market_cap, trading_halted`
+> - **가격(open/high/low/close)은 수정주가뿐**입니다. 액면분할·무상증자·유상증자로 소급 수정되고 배당은 반영하지 않습니다. 원주가를 고르는 파라미터나 컬럼은 없습니다. 위 4개 외 파라미터(`adjusted=` 등)나 없는 컬럼 이름을 넣으면 400 에러입니다.
+> - **volume, value, shares_outstanding, market_cap은 수정되지 않은 당일 값**입니다. 원주가 종가 = `market_cap ÷ shares_outstanding`
+
 # GetMarketIndexSymbols
 
 ### Function specification

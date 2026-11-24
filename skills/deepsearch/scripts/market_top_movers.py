@@ -30,6 +30,10 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 URL_BASE = 'https://api.deepsearch.com/v1/compute?input='
 
+# DeepSearch 주가는 수정주가뿐 (research/price_adjustment/README.md). 결과에 그대로 실어 안내하게 한다.
+PRICE_BASIS_NOTICE = ('주가 기준: 종가는 수정주가입니다(액면분할·증자 소급 반영, 배당 미반영). '
+                      '시가총액은 당일 실제 값입니다.')
+
 
 def api_call(api_key, query, max_retries=3):
     headers = {'Authorization': f'Basic {api_key}'}
@@ -192,6 +196,7 @@ def main():
         'top_n': top_n,
         'most_declined': top_stocks[:10],
         'most_advanced': list(reversed(top_stocks[-10:])),
+        'price_basis_notice': PRICE_BASIS_NOTICE,
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
 

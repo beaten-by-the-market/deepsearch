@@ -40,3 +40,4 @@ research/*/data/cache/
 # DeepSearch 원시 값이 든 결과물 (공개 저장소라 제외, 재현 스크립트로 로컬 생성)
 research/restatement/data/ds_vs_dart.csv
 research/pbr_bps/data/*.csv
+research/price_adjustment/data/*.csv
