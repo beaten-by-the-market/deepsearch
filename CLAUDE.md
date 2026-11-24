@@ -40,7 +40,7 @@ deepsearch/
 
 - Source of truth: `skills/deepsearch/`. No build step (zip distribution was removed 2026-11-25).
 - `.claude/commands/deepsearch.md` is a condensed copy of the skill for Claude Code in this repo; keep its paths pointing at `skills/deepsearch/`.
-- Scripts share `skills/deepsearch/scripts/_ds_common.py`: API key lookup (env `DEEPSEARCH_API_KEY`/`API_KEY` → `.env` in cwd/parents → skill-dir parents; a key as the first CLI arg still works), compute via POST, `data.exceptions` surfaced as errors with hints, and large results (>20k chars) saved to a temp JSON file with only a preview printed.
+- Scripts share `skills/deepsearch/scripts/_ds_common.py` (transport/output) and `_ds_data.py` (stock universe via `GetStockSymbols()`, all-stock snapshot via `GetStockPrices` without entities, index snapshot, `format_krw`, `PRICE_BASIS_NOTICE`). No script loops per company; use list/all-stock calls. _ds_common: API key lookup (env `DEEPSEARCH_API_KEY`/`API_KEY` → `.env` in cwd/parents → skill-dir parents; a key as the first CLI arg still works), compute via POST, `data.exceptions` surfaced as errors with hints, and large results (>20k chars) saved to a temp JSON file with only a preview printed.
 - In SKILL.md, `${CLAUDE_SKILL_DIR}` means the skill folder (`skills/deepsearch` when reading the repo directly).
 
 ## Architecture (newsscrap)

@@ -1,208 +1,66 @@
 #!/usr/bin/env python3
-"""코스닥/코스피 시가총액 상위 N개 종목의 등락률 조회
+"""시가총액 상위 N개 종목의 등락률 (코스피/코스닥/전체)
 
 사용법:
-    python market_top_movers.py <market> <top_n> <date>   # API 키는 .env / 환경변수에서
+    python market_top_movers.py <kospi|kosdaq|all> <top_n> <date> [--include-preferred]
 
 예시:
     python market_top_movers.py kosdaq 150 2025-02-27
     python market_top_movers.py kospi 100 2025-02-27
 
-출력: JSON (시가총액 상위 N개 중 하락률 기준 정렬)
+동작: API 2번 호출 (GetStockSymbols로 일반법인 목록 → GetStockPrices로 전 종목 당일 시세).
+      date가 휴장일이면 직전 거래일 기준. 우선주는 기본 제외.
+출력: JSON — 시가총액 상위 N개 중 하락률·상승률 상위 10개씩
+API 키: .env / 환경변수 (또는 첫 인자로 키)
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _ds_common import pop_api_key, setup_stdout  # noqa: E402
-import json
-import time
-import re
-from urllib.parse import quote
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from _ds_common import DeepSearchError, fail, fail_error, pop_api_key, print_json, setup_stdout  # noqa: E402
+from _ds_data import PRICE_BASIS_NOTICE, parse_date, stock_snapshot, stock_universe  # noqa: E402
 
-try:
-    import requests
-    requests.packages.urllib3.disable_warnings()
-except ImportError:
-    print(json.dumps({'success': False, 'error': 'requests 필요: pip install requests'}, ensure_ascii=False))
-    sys.exit(1)
-
-# Windows 한글 출력
-sys.stdout.reconfigure(encoding='utf-8')
-
-URL_BASE = 'https://api.deepsearch.com/v1/compute?input='
-
-# DeepSearch 주가는 수정주가뿐 (research/price_adjustment/README.md). 결과에 그대로 실어 안내하게 한다.
-PRICE_BASIS_NOTICE = ('주가 기준: 종가는 수정주가입니다(액면분할·증자 소급 반영, 배당 미반영). '
-                      '시가총액은 당일 실제 값입니다.')
-
-
-def api_call(api_key, query, max_retries=3):
-    headers = {'Authorization': f'Basic {api_key}'}
-    url = f'{URL_BASE}{quote(query, safe="")}'
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(url, headers=headers, verify=False, timeout=60)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            if attempt < max_retries - 1:
-                time.sleep(2)
-            else:
-                return None
-
-
-def get_listed_companies(api_key, market):
-    """코스닥/코스피 상장 기업 목록 조회"""
-    market_kr = '코스닥' if market.lower() == 'kosdaq' else '코스피'
-    query = f'{market_kr} 상장 기업'
-    data = api_call(api_key, query)
-    if not data or not data.get('success'):
-        return []
-
-    pods = data.get('data', {}).get('pods', [])
-    if len(pods) < 2:
-        return []
-
-    content = pods[1].get('content', {})
-    inner = content.get('data', {}) if isinstance(content, dict) else {}
-    if 'data' in inner:
-        inner = inner['data']
-
-    names = inner.get('entity_name', [])
-    symbols = inner.get('symbol', [])
-    return list(zip(names, symbols))
-
-
-def get_stock_data(api_key, name, date_str):
-    """개별 종목의 종가, 시가총액, 등락률 조회"""
-    # 전일 포함 2일치 조회
-    parts = date_str.split('-')
-    y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
-    # 간단히 7일 전부터 조회 (주말/공휴일 대비)
-    from datetime import date, timedelta
-    target = date(y, m, d)
-    start = target - timedelta(days=7)
-    start_str = start.strftime('%Y-%m-%d')
-
-    query = f'{name} 종가 시가총액 {start_str}-{date_str}'
-    data = api_call(api_key, query, max_retries=2)
-    if not data or not data.get('success'):
-        return None
-
-    pods = data.get('data', {}).get('pods', [])
-    if len(pods) < 2:
-        return None
-
-    content = pods[1].get('content', {})
-    inner = content.get('data', {}) if isinstance(content, dict) else {}
-    if 'data' in inner:
-        inner = inner['data']
-
-    dates = inner.get('date', [])
-    if not dates:
-        return None
-
-    # 컬럼명에서 종가, 시가총액 찾기
-    close_vals = None
-    mktcap_vals = None
-    for k, v in inner.items():
-        kl = k.lower()
-        if '종가' in k or 'close' in kl:
-            close_vals = v
-        if '시가총액' in k or 'market_cap' in kl:
-            mktcap_vals = v
-
-    if not close_vals or len(close_vals) < 2:
-        return None
-
-    # 마지막 날 = target date, 그 전날 = 전일
-    last_close = close_vals[-1]
-    prev_close = close_vals[-2]
-    last_mktcap = mktcap_vals[-1] if mktcap_vals else 0
-    last_date = dates[-1][:10] if dates else date_str
-
-    if prev_close and prev_close > 0 and last_close is not None:
-        change_pct = (last_close - prev_close) / prev_close * 100
-    else:
-        change_pct = 0
-
-    return {
-        'name': name,
-        'date': last_date,
-        'close': last_close,
-        'prev_close': prev_close,
-        'change_pct': round(change_pct, 2),
-        'market_cap': last_mktcap,
-    }
+MARKET_ARG = {'kospi': ('KOSPI',), 'kosdaq': ('KOSDAQ',), 'all': ('KOSPI', 'KOSDAQ')}
+USAGE = 'python market_top_movers.py <kospi|kosdaq|all> <top_n> <YYYY-MM-DD> [--include-preferred]'
 
 
 def main():
     setup_stdout()
     api_key, args = pop_api_key(sys.argv[1:])
-    if len(args) < 3:
-        print(json.dumps({
-            'success': False,
-            'error': 'Usage: python market_top_movers.py <kosdaq|kospi> <top_n> <date>',
-            'example': 'python market_top_movers.py kosdaq 150 2025-02-27'
-        }, ensure_ascii=False, indent=2))
-        sys.exit(1)
+    include_preferred = '--include-preferred' in args
+    args = [a for a in args if a != '--include-preferred']
+    if len(args) < 3 or args[0].lower() not in MARKET_ARG:
+        fail(f'Usage: {USAGE}')
+    try:
+        top_n, day = int(args[1]), parse_date(args[2])
+    except ValueError:
+        fail(f'top_n은 정수, 날짜는 YYYY-MM-DD 형식이어야 합니다. Usage: {USAGE}')
 
-    market = args[0]
-    top_n = int(args[1])
-    target_date = args[2]
+    try:
+        universe = stock_universe(api_key, MARKET_ARG[args[0].lower()], include_preferred)
+        rows = stock_snapshot(api_key, day, universe)
+    except DeepSearchError as e:
+        fail_error(e)
+    if not rows:
+        fail(f'{day} 이전 7일 안에 시세가 없습니다.')
 
-    print(f'[1/3] {market.upper()} 상장 기업 목록 조회 중...', file=sys.stderr)
-    companies = get_listed_companies(api_key, market)
-    if not companies:
-        print(json.dumps({'success': False, 'error': f'{market} 상장 기업 목록 조회 실패'}, ensure_ascii=False))
-        sys.exit(1)
-    print(f'  → {len(companies)}개 기업', file=sys.stderr)
-
-    print(f'[2/3] 시가총액+종가 일괄 조회 중 (병렬 10개)...', file=sys.stderr)
-    results = []
-    failed = 0
-
-    def fetch(item):
-        name, symbol = item
-        return get_stock_data(api_key, name, target_date)
-
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(fetch, c): c for c in companies}
-        done = 0
-        for future in as_completed(futures):
-            done += 1
-            if done % 100 == 0:
-                print(f'  → {done}/{len(companies)} 완료', file=sys.stderr)
-            result = future.result()
-            if result and result['market_cap'] and result['market_cap'] > 0:
-                results.append(result)
-            else:
-                failed += 1
-
-    print(f'  → 성공: {len(results)}개, 실패: {failed}개', file=sys.stderr)
-
-    print(f'[3/3] 시가총액 상위 {top_n}개 → 등락률 정렬 중...', file=sys.stderr)
-    # 시가총액 기준 상위 N개
-    results.sort(key=lambda x: x['market_cap'], reverse=True)
-    top_stocks = results[:top_n]
-
-    # 등락률 기준 정렬 (하락순)
-    top_stocks.sort(key=lambda x: x['change_pct'])
-
-    output = {
+    rows.sort(key=lambda r: r['market_cap'], reverse=True)
+    top = [r for r in rows[:top_n] if r['change_pct'] is not None]
+    by_change = sorted(top, key=lambda r: r['change_pct'])
+    print_json({
         'success': True,
-        'market': market.upper(),
-        'date': target_date,
-        'total_listed': len(companies),
-        'data_available': len(results),
+        'market': args[0].upper(),
+        'requested_date': str(day),
+        'trading_date': max(r['date'] for r in rows),
+        'universe_count': len(universe),
+        'priced_count': len(rows),
         'top_n': top_n,
-        'most_declined': top_stocks[:10],
-        'most_advanced': list(reversed(top_stocks[-10:])),
+        'preferred_included': include_preferred,
+        'most_declined': by_change[:10],
+        'most_advanced': by_change[::-1][:10],
         'price_basis_notice': PRICE_BASIS_NOTICE,
-    }
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+    })
 
 
 if __name__ == '__main__':

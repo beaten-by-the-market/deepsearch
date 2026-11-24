@@ -13,6 +13,7 @@ $ARGUMENTS
 - **API 키:** 스크립트가 환경변수 `DEEPSEARCH_API_KEY`/`API_KEY` 또는 레포 루트 `.env`에서 직접 읽습니다. 키를 명령에 넣거나 `.env`를 출력하지 마세요. 없으면 사용자에게 한 번만 요청해 `.env`에 `API_KEY=<키>`로 저장하세요.
 - **실행:** `python skills/deepsearch/scripts/query_api.py "쿼리"` (옵션: `--out 파일`, `--max-pages N`, `--grep 정규식`)
 - **큰 결과:** 2만 자가 넘으면 임시 파일로 저장되고 `saved_to`와 미리보기만 출력됩니다. 그 파일을 Python으로 읽어 필요한 부분만 쓰세요.
+- **여러 회사·종목은 한 번에:** `GetFinancialStatements([A, B, ...])`(50개씩), `GetStockPrices([...])`. `GetStockPrices`는 종목을 생략하면 전 종목의 마지막 거래일 시세. `change_rate`는 종목은 비율, 지수는 퍼센트.
 - **쓸 수 있는 함수:** `docs/reference/DEEPSEARCH_API_MASTER.md` 17절(호출 결과 표). 채권·통계청 함수, v2 REST, 해외기업, 챗딥서치는 현재 구독으로 쓸 수 없습니다.
 
 ## 쿼리 라우팅

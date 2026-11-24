@@ -2801,6 +2801,7 @@ date       symbol      entity_name   close
 > - 반환 컬럼: `open, high, low, close, volume, value, change, change_rate, shares_outstanding, market_cap, trading_halted`
 > - **가격(open/high/low/close)은 수정주가뿐**입니다. 액면분할·무상증자·유상증자로 소급 수정되고 배당은 반영하지 않습니다. 원주가를 고르는 파라미터나 컬럼은 없습니다. 위 4개 외 파라미터(`adjusted=` 등)나 없는 컬럼 이름을 넣으면 400 에러입니다.
 > - **volume, value, shares_outstanding, market_cap은 수정되지 않은 당일 값**입니다. 원주가 종가 = `market_cap ÷ shares_outstanding`
+> - `entities`를 생략하면 전 종목(ETF 포함)의 기간 마지막 거래일 하루치가 옵니다. 목록(`[KRX:005930, KRX:000660]`)도 됩니다. `change_rate`는 비율(-0.0876 = -8.76%)입니다(지수 `GetMarketIndexes`는 퍼센트).
 <!-- repo-memo:end -->
 
 <!-- source: https://help.deepsearch.com/dp/api/func/company/undefined/getmarketindexsymbols -->

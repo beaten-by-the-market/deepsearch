@@ -79,13 +79,12 @@ GetStockPrices(KRX:005930, columns=["close","volume","shares_outstanding","marke
 → 같은 범위를 자연어(`삼성전자 종가 2018-04-25-2018-05-08`)로 넣으면 **오늘 값 1행**만 옴 (자연어는 2020-01-02 이후만)
 → 원주가 옵션(`adjusted=False`, `columns=["adj_close"]` 등)은 없음, 모두 400
 
-## 사례 11: 복수 기업 재무 비교 (GetFinancialStatements 개별 호출)
+## 사례 11: 복수 기업 재무 비교 (GetFinancialStatements 목록 호출)
 ```
-GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)
-GetFinancialStatements(LG전자, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)
-GetFinancialStatements(SK하이닉스, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)
+GetFinancialStatements([삼성전자, LG전자, SK하이닉스], report_type="IFRS", consolidated=True, report_ids="Income", date_from=2020-01-01, date_to=2024-12-31)
 ```
-→ 각각 507개 항목 반환, 매출·영업이익 등 필요 항목 필터링하여 비교
+→ 세 회사 행이 한 결과에 옴(`symbol`로 구분). `--grep '^(수익|영업이익\(손실\))$'`로 필요한 계정만 남겨 비교
+→ 3개사 3년 손익 약 900행·2초 (2026-11-25). 수백 개사면 50개씩 나눠 호출
 
 ## 사례 12: 애널리스트 목표가
 ```
@@ -206,13 +205,13 @@ python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000
 ```
 코스닥 상장 기업
 ```
-→ 1,820개 (한글 `코스닥`으로 써야 함, `KOSDAQ` 안 됨)
+→ 1,837행 (2026-11-25, 한글 `코스닥`으로 써야 함, `KOSDAQ` 안 됨). ETF 등 기타법인 포함 — 일반법인만은 `GetStockSymbols()`의 `company_type_l1 == "1"`
 
 ## 사례 39: 코스피 전체 상장기업 목록
 ```
 코스피 상장 기업
 ```
-→ 2,404개
+→ 2,498행 (2026-11-25, ETF 등 기타법인 포함)
 
 ## 사례 40: 코스닥 매출 1000억 이상 기업
 ```
@@ -225,7 +224,7 @@ python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000
 python ${CLAUDE_SKILL_DIR}/scripts/market_top_movers.py kosdaq 150 2025-02-27
 ```
 → 시가총액 상위 150개 중 최다 하락/상승 10개씩 출력
-→ 내부: 전체 종목 조회 → 병렬 시가총액 수집 → 정렬
+→ 내부: `GetStockSymbols()`로 일반법인 목록 + 종목 생략 `GetStockPrices`로 전 종목 당일 시세 (API 2번, 약 5초). 우선주 제외(`--include-preferred`로 포함)
 
 ---
 
@@ -413,19 +412,21 @@ DocumentSearch(["news"],[],"title:(시세조종 or 불공정거래 or 내부자�
 ```bash
 python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py 2026-02-27
 ```
-→ 7/7 섹션 성공 (28초)
-- 시장 지수: KOSPI 6,244.13 (-1.00%), KOSDAQ 1,192.78 (+0.39%), KOSPI200 933.34 (-1.13%)
-- 규모별 동향: 강세 코스닥 대형주(+1.20%), 약세 코스닥 소형주(-1.08%)
-- 시총 상위 등락: 상승 현대차(+10.67%), LG화학(+7.05%) / 하락 한국전력(-7.58%), SK스퀘어(-5.01%)
-- 뉴스 언급 상위: 현대차(116건), 삼성전자(103건), NAVER(89건)
-- 주요 뉴스: 1,794건 (국민연금 수익률, 코인 유출, 구글 지도 반출 등)
-- 트렌딩 토픽: 한전 13.5조 이익, 갤럭시 S26, 쿠팡 과징금 등 10개
-- 시장 감성: 긍정 우세 (긍정 37.1%, 부정 4.6%, 중립 58.3%)
+→ 7/7 섹션 성공 (약 5초, API 8회. 2026-11-25 개편 전에는 종목별 호출로 28초)
+
+`market_overview.py 2025-11-21` 실행 결과 (2026-11-25):
+- 시장 지수: KOSPI 3,853.26 (-3.79%), KOSDAQ 863.95 (-3.14%), KOSPI200 540.36 (-4.23%)
+- 규모별 동향: 강세 코스피 소형주(-1.59%), 약세 코스피 대형주(-4.06%)
+- 시총 상위 30 등락: 상승 NAVER(+2.14%), 삼성화재(+0.64%) / 하락 SK스퀘어(-9.37%), SK하이닉스(-8.76%)
+- 뉴스 언급 상위: 삼성전자(203건), POSCO홀딩스(103건), 현대차(86건)
+- 주요 뉴스: 1,913건
+- 토픽: 기아 PV5 올해의 밴 수상, 포스코인터 인니 팜 기업 인수 등 10개
+- 시장 감성: 긍정 우세 (긍정 34.5%, 부정 7.9%, 중립 57.6%)
 
 ## 사례 62: 주말 날짜 시황분석 (비거래일 처리)
 ```bash
-python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py 2026-02-22
+python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py 2025-11-23
 ```
 → 7/7 섹션 성공
-- 시장 데이터: 직전 거래일(2026-02-20 금요일) 기준으로 자동 조회
-- 뉴스/토픽: 2026-02-22 (일요일) 날짜 그대로 조회 (465건)
+- 시장 데이터: 직전 거래일(2025-11-21 금요일) 기준, 결과의 `trading_date`에 표시
+- 뉴스/토픽: 2025-11-23 (일요일) 날짜 그대로 조회 (528건)

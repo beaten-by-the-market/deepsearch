@@ -182,10 +182,10 @@ FindPeopleByName(name)
 |------|------|
 | 기간 제한 | DocumentSearch **최대 1년**(초과 시 HTTP 413). `query_api.py`가 1년 단위로 자동 분할 |
 | 영업이익 연도비교 | `2024 영업이익 < 0 and 2023 영업이익 > 0` 불가 → turnaround_screener.py 사용 |
-| 복수기업+연도범위 | `삼성전자 LG전자 영업이익 2020-2024` 불가 → `GetFinancialStatements` 개별 호출 |
+| 복수기업+연도범위 | `삼성전자 LG전자 영업이익 2020-2024` 불가 → `GetFinancialStatements([삼성전자, LG전자], ...)` 한 번에 |
 | 한글 근접검색 | `"인수 합병"~5` 불가 |
 | 인물 엔티티 | `named_entities.entities.person.name:인물명` 빈 결과 가능 → `content:인물명` 대체 |
-| created_at 필드 | 직접 사용 시 문법 오류 → `date_from`/`date_to` 파라미터 사용 |
+| 시간 단위 범위 | `date_from`/`date_to`는 날짜만 → 시간은 쿼리에 `created_at:[\"2025-02-28T09:00:00\" to \"2025-02-28T12:00:00\"]` (2026-11-25 확인) |
 
 ---
 

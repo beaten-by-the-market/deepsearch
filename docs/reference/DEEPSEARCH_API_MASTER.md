@@ -522,6 +522,9 @@ GetMarketIndexSymbols(entities=None)                                    # 지수
 GetMarketIndexes(entities=None, columns=None, date_from=None, date_to=None) # 지수 가격·거래량
 ```
 - `GetStockPrices` 컬럼: `open, high, low, close, volume, value, change, change_rate, shares_outstanding, market_cap, trading_halted`
+- **여러 종목·전 종목 (레포 검증 2026-11-25):** `GetStockPrices([KRX:005930, KRX:000660], ...)`처럼 목록을 받습니다. `entities`를 생략하면 **전 종목**(4,300여 개, ETF 포함)의 **기간 마지막 거래일 하루치**가 3초 안에 옵니다. `GetStockSymbols()`도 생략하면 전 종목 기본정보(`market`, `company_type_l1`: 1 일반법인 / 8 ETF 등)를 줍니다.
+- **`change_rate` 단위:** 종목은 비율(-0.0876 = -8.76%), `GetMarketIndexes`는 퍼센트(1.94 = 1.94%)입니다.
+- `GetMarketIndexes(date_from, date_to)`는 지수 11종을 거래일마다 돌려줍니다. `GetFinancialStatements`도 기업 목록을 받습니다(3개사 3년 손익 약 900행).
 - 가격은 **수정주가뿐**이고 원주가 옵션이 없습니다. 거래량·거래대금·주식수·시가총액은 당일 실제 값입니다([15절](#15-주의사항) 7번).
 
 ---

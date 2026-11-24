@@ -2,10 +2,12 @@
 DeepSearch 스킬 스크립트 공통 모듈.
 
 - API 키 찾기: 명령행 첫 인자(구 방식) > 환경변수 DEEPSEARCH_API_KEY / API_KEY > .env 파일
-- compute 호출: URL 인코딩, 재시도, HTTP 4xx 본문의 data.exceptions까지 읽어서 원인을 돌려줌
+- compute 호출: POST, 재시도, HTTP 4xx 본문의 data.exceptions까지 읽어서 원인을 DeepSearchError로 올림
+- 결과 변환: Result:DataFrame → 행(dict) 리스트
 - 결과 출력: 작으면 그대로 출력, 크면 JSON 파일로 저장하고 미리보기만 출력
   (Claude Code는 Bash 출력을 약 3만 자에서 자르므로 큰 결과를 stdout에 그대로 내면 데이터가 사라진다)
 
+시장 데이터 헬퍼(종목 유니버스, 전 종목 시세, 지수 등)는 _ds_data.py에 있다.
 API 키 값은 출력·로그·파일 어디에도 쓰지 않는다.
 """
 
@@ -46,6 +48,25 @@ def setup_stdout():
 
 def fail(message, **extra):
     print(json.dumps({'success': False, 'error': message, **extra}, ensure_ascii=False, indent=2))
+    sys.exit(1)
+
+
+def error_payload(e, query=None):
+    """DeepSearchError → 출력용 dict (error, http_status, hint)."""
+    out = {'success': False, 'error': str(e)}
+    if query:
+        out['query'] = query
+    if getattr(e, 'status', None):
+        out['http_status'] = e.status
+    hint = hint_for(str(e))
+    if hint:
+        out['hint'] = hint
+    return out
+
+
+def fail_error(e, query=None):
+    """DeepSearchError를 error/http_status/hint 형태로 출력하고 종료."""
+    print(json.dumps(error_payload(e, query), ensure_ascii=False, indent=2))
     sys.exit(1)
 
 
@@ -214,7 +235,24 @@ def result_pod(body):
     return pods[1] if len(pods) >= 2 else None
 
 
+def query_records(api_key, query, **kwargs):
+    """compute 호출 → Result:DataFrame이면 행 리스트, 결과가 없으면 []. 다른 pod이면 DeepSearchError."""
+    pod = result_pod(compute(api_key, query, **kwargs))
+    if pod is None:
+        return []
+    records = dataframe_records(pod.get('content'))
+    if records is None:
+        if pod.get('class') == 'Result:DataFrame':
+            return []
+        raise DeepSearchError(f"DataFrame이 아닌 결과입니다: {pod.get('class')}")
+    return records
+
+
 # ---------------------------------------------------------------- 출력
+
+def print_json(obj):
+    print(json.dumps(obj, ensure_ascii=False, indent=2))
+
 
 def dataframe_records(content):
     """Result:DataFrame content({columns, data:{col:[...]}}) → 행 리스트."""

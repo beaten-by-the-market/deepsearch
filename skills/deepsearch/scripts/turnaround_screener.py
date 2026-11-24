@@ -1,207 +1,141 @@
 #!/usr/bin/env python3
 """
-적자전환/흑자전환 기업 스크리너
+적자전환/흑자전환 상장기업 스크리너
 
 사용법:
-    python turnaround_screener.py <방향> [매출기준(억)]   # API 키는 .env / 환경변수에서
-
-    방향: loss (적자전환) 또는 profit (흑자전환)
-    매출기준: 최소 매출액 (억 단위, 기본값 1000 = 1000억)
+    python turnaround_screener.py <loss|profit> [매출기준_억=1000] [--years 이전연도 최근연도]
 
 예시:
-    python turnaround_screener.py loss           → 매출 1000억+ 적자전환 기업
-    python turnaround_screener.py profit          → 매출 1000억+ 흑자전환 기업
-    python turnaround_screener.py loss 5000       → 매출 5000억+ 적자전환 기업
+    python turnaround_screener.py loss              → 매출 1000억+ 적자전환 (최근 결산연도 자동)
+    python turnaround_screener.py profit 5000       → 매출 5000억+ 흑자전환
+    python turnaround_screener.py loss 1000 --years 2023 2024
 
 원리:
-    1단계: 현재 영업이익 < 0 (또는 > 0) 상장기업 스크리닝
-    2단계: 각 기업의 2개년 영업이익 개별 조회
-    3단계: 전년대비 부호 전환 기업 필터링
-
-의존성: requests (pip install requests)
+    1. 스크리닝: `상장 기업 and 영업이익 < 0 (또는 > 0) and 매출 > X` (현재 기준 후보)
+       → 영업이익의 연도 간 비교는 스크리닝 쿼리로 안 되기 때문에 후보만 먼저 좁힌다.
+    2. GetFinancialStatements를 50개사씩 묶어 손익계산서 영업이익(`영업이익(손실)`, account_id 5000)을 받는다.
+       연결이 없는 회사는 별도로 다시 받는다.
+    3. 최근 결산연도(후보의 절반 이상이 값을 가진 가장 최근 연도)와 그 전년의 부호가 바뀐 회사만 남긴다.
+API 키: .env / 환경변수 (또는 첫 인자로 키)
 """
 
-import sys
 import os
+import sys
+from collections import Counter
+from datetime import date
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _ds_common import pop_api_key, setup_stdout  # noqa: E402
-import json
-import time
+from _ds_common import DeepSearchError, fail, fail_error, pop_api_key, print_json, query_records, setup_stdout  # noqa: E402
+from _ds_data import format_krw  # noqa: E402
 
-try:
-    import requests
-    requests.packages.urllib3.disable_warnings()
-except ImportError:
-    print(json.dumps({'success': False, 'error': 'requests 라이브러리가 필요합니다: pip install requests'}, ensure_ascii=False))
-    sys.exit(1)
-
-URL_BASE = 'https://api.deepsearch.com/v1/compute?input='
+BATCH = 50
+OP_INCOME = ('12', '5000')   # (report_id, account_id) = 손익계산서 / 영업이익(손실)
+USAGE = 'python turnaround_screener.py <loss|profit> [매출기준_억=1000] [--years 이전연도 최근연도]'
 
 
-def api_call(api_key, query, max_retries=3):
-    """API 호출 (재시도 포함)."""
-    headers = {'Authorization': f'Basic {api_key}'}
-    url = f'{URL_BASE}{query}'
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(url, headers=headers, verify=False, timeout=60)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            if attempt < max_retries - 1:
-                time.sleep(3)
-            else:
-                return {'success': False, 'error': str(e)}
-    return {'success': False, 'error': 'Max retries exceeded'}
+def screen(api_key, direction, min_revenue):
+    sign = '<' if direction == 'loss' else '>'
+    query = f'상장 기업 and 영업이익 {sign} 0 and 매출 > {min_revenue}'
+    print(f'[1/3] 스크리닝: {query}', file=sys.stderr)
+    rows = query_records(api_key, query)
+    return {r['symbol']: r.get('entity_name', '') for r in rows if r.get('symbol')}
 
 
-def get_screening_list(api_key, direction, min_revenue):
-    """1단계: 현재 영업이익 기준 상장기업 리스트."""
-    revenue_condition = f'매출 > {min_revenue}'
-
-    if direction == 'loss':
-        query = f'상장 기업 and 영업이익 < 0 and {revenue_condition}'
-    else:
-        query = f'상장 기업 and 영업이익 > 0 and {revenue_condition}'
-
-    print(f'[1단계] 스크리닝: {query}', file=sys.stderr)
-    data = api_call(api_key, query)
-
-    if not data.get('success'):
-        return []
-
-    pods = data.get('data', {}).get('pods', [])
-    if len(pods) < 2:
-        return []
-
-    d = pods[1].get('content', {}).get('data', {})
-    entities = []
-    names = d.get('entity_name', [])
-    symbols = d.get('symbol', [])
-    for i in range(len(names)):
-        entities.append({
-            'name': names[i],
-            'symbol': symbols[i] if i < len(symbols) else ''
-        })
-
-    print(f'[1단계] {len(entities)}개 기업 추출', file=sys.stderr)
-    return entities
+def operating_income(api_key, symbols, year_from, year_to, consolidated):
+    """{symbol: {year: 영업이익}} (연간)."""
+    out = {}
+    for i in range(0, len(symbols), BATCH):
+        chunk = symbols[i:i + BATCH]
+        q = (f'GetFinancialStatements([{", ".join(chunk)}], report_ids="Income", consolidated={consolidated}, '
+             f'date_from={year_from}-01-01, date_to={year_to}-12-31)')
+        for r in query_records(api_key, q, timeout=180):
+            if (r.get('report_id'), r.get('account_id')) == OP_INCOME and r.get('value') is not None:
+                out.setdefault(r['symbol'], {})[int(r['date'][:4])] = r['value']
+        print(f'  → {"연결" if consolidated else "별도"} {min(i + BATCH, len(symbols))}/{len(symbols)}', file=sys.stderr)
+    return out
 
 
-def check_turnaround(api_key, entity_name, direction):
-    """2단계: 개별 기업의 2개년 영업이익 조회."""
-    query = f'{entity_name} 영업이익 2023-2024'
-    data = api_call(api_key, query)
-
-    if not data.get('success'):
+def latest_common_year(values):
+    """후보의 절반 이상이 값을 가진 가장 최근 연도."""
+    counts = Counter(y for v in values.values() for y in v)
+    if not counts:
         return None
-
-    pods = data.get('data', {}).get('pods', [])
-    if len(pods) < 2:
-        return None
-
-    d = pods[1].get('content', {}).get('data', {})
-    dates = d.get('date', [])
-    values_key = [k for k in d.keys() if '영업이익' in k]
-    if not values_key:
-        return None
-
-    values = d[values_key[0]]
-
-    year_data = {}
-    for i, date_str in enumerate(dates):
-        if i < len(values):
-            year = date_str[:4]
-            val = values[i]
-            if isinstance(val, (int, float)):
-                year_data[year] = val
-
-    if '2023' not in year_data or '2024' not in year_data:
-        return None
-
-    v2023 = year_data['2023']
-    v2024 = year_data['2024']
-
-    if direction == 'loss' and v2023 > 0 and v2024 < 0:
-        return {'2023': v2023, '2024': v2024, 'type': '적자전환'}
-    elif direction == 'profit' and v2023 < 0 and v2024 > 0:
-        return {'2023': v2023, '2024': v2024, 'type': '흑자전환'}
-
-    return None
-
-
-def format_value(v):
-    """금액을 억/조 단위로 변환."""
-    abs_v = abs(v)
-    if abs_v >= 1e12:
-        return f'{v/1e12:.2f}조'
-    elif abs_v >= 1e8:
-        return f'{v/1e8:.0f}억'
-    else:
-        return f'{v:,.0f}'
+    need = len(values) / 2
+    ok = [y for y, n in counts.items() if n >= need]
+    return max(ok) if ok else max(counts)
 
 
 def main():
     setup_stdout()
     api_key, args = pop_api_key(sys.argv[1:])
-    if len(args) < 1:
-        print(json.dumps({
-            'success': False,
-            'error': 'Usage: python turnaround_screener.py <loss|profit> [min_revenue_억]'
-        }, ensure_ascii=False, indent=2))
-        sys.exit(1)
-
+    years = None
+    if '--years' in args:
+        i = args.index('--years')
+        try:
+            years = (int(args[i + 1]), int(args[i + 2]))
+        except (IndexError, ValueError):
+            fail(f'--years 뒤에 연도 두 개가 필요합니다. Usage: {USAGE}')
+        del args[i:i + 3]
+    if not args or args[0].lower() not in ('loss', 'profit'):
+        fail(f'Usage: {USAGE}')
     direction = args[0].lower()
-    min_revenue_eok = int(args[1]) if len(args) > 1 else 1000
-    min_revenue = min_revenue_eok * 100000000  # 억 → 원
-
-    if direction not in ('loss', 'profit'):
-        print(json.dumps({'success': False, 'error': 'direction must be "loss" or "profit"'}, ensure_ascii=False))
-        sys.exit(1)
-
+    try:
+        min_revenue_eok = int(args[1]) if len(args) > 1 else 1000
+    except ValueError:
+        fail(f'매출기준은 억 단위 정수입니다. Usage: {USAGE}')
     label = '적자전환' if direction == 'loss' else '흑자전환'
-    print(f'[시작] {label} 기업 스크리닝 (매출 {min_revenue_eok}억 이상)', file=sys.stderr)
 
-    # 1단계: 스크리닝
-    entities = get_screening_list(api_key, direction, min_revenue)
-    if not entities:
-        print(json.dumps({'success': True, 'type': label, 'count': 0, 'companies': []}, ensure_ascii=False, indent=2))
-        return
+    try:
+        candidates = screen(api_key, direction, min_revenue_eok * 100_000_000)
+        if not candidates:
+            print_json({'success': True, 'type': label, 'screened_count': 0, 'companies': []})
+            return
+        print(f'  → 후보 {len(candidates)}개사', file=sys.stderr)
 
-    # 2단계: 개별 기업 확인
-    turnaround_companies = []
-    total = len(entities)
+        y_from, y_to = (years[0], years[1]) if years else (date.today().year - 3, date.today().year)
+        print('[2/3] 영업이익 조회 (연결 → 없으면 별도)', file=sys.stderr)
+        symbols = sorted(candidates)
+        values = operating_income(api_key, symbols, y_from, y_to, True)
+        basis = {s: '연결' for s in values}
+        missing = [s for s in symbols if s not in values]
+        if missing:
+            separate = operating_income(api_key, missing, y_from, y_to, False)
+            values.update(separate)
+            basis.update({s: '별도' for s in separate})
+    except DeepSearchError as e:
+        fail_error(e)
 
-    for i, entity in enumerate(entities):
-        name = entity['name']
-        print(f'[2단계] ({i+1}/{total}) {name} 확인 중...', file=sys.stderr)
+    latest = years[1] if years else latest_common_year(values)
+    if latest is None:
+        fail('후보 기업의 영업이익 데이터를 받지 못했습니다.')
+    prev = years[0] if years else latest - 1
 
-        result = check_turnaround(api_key, name, direction)
-        if result:
-            turnaround_companies.append({
-                'name': name,
-                'symbol': entity['symbol'],
-                '2023_영업이익': format_value(result['2023']),
-                '2024_영업이익': format_value(result['2024']),
-                '2023_raw': result['2023'],
-                '2024_raw': result['2024'],
+    print(f'[3/3] {prev} → {latest} 부호 전환 확인', file=sys.stderr)
+    companies = []
+    for s in symbols:
+        v = values.get(s, {})
+        a, b = v.get(prev), v.get(latest)
+        if a is None or b is None:
+            continue
+        if (direction == 'loss' and a > 0 > b) or (direction == 'profit' and a < 0 < b):
+            companies.append({
+                'name': candidates[s], 'symbol': s, 'basis': basis.get(s, ''),
+                f'{prev}_영업이익': format_krw(a, 2), f'{latest}_영업이익': format_krw(b, 2),
+                f'{prev}_raw': a, f'{latest}_raw': b,
             })
-            print(f'  → {label}: {name} (2023: {format_value(result["2023"])} → 2024: {format_value(result["2024"])})', file=sys.stderr)
+    companies.sort(key=lambda c: c[f'{latest}_raw'])
 
-        # API 부하 방지
-        time.sleep(0.5)
-
-    # 결과 출력
-    output = {
+    print_json({
         'success': True,
         'type': label,
-        'min_revenue': f'{min_revenue_eok}억',
-        'screened_count': total,
-        'turnaround_count': len(turnaround_companies),
-        'companies': turnaround_companies
-    }
-
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+        'min_revenue': f'{min_revenue_eok:,}억',
+        'years': [prev, latest],
+        'screened_count': len(candidates),
+        'compared_count': sum(1 for s in symbols if prev in values.get(s, {}) and latest in values.get(s, {})),
+        'turnaround_count': len(companies),
+        'companies': companies,
+        'note': '영업이익은 GetFinancialStatements 손익계산서 `영업이익(손실)`. 과거 연도 값은 재작성값일 수 있음(SKILL.md 규칙 4).',
+    })
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 DeepSearch API 호출 스크립트 (공통)
 
 사용법:
@@ -12,7 +12,7 @@ API 키는 환경변수 DEEPSEARCH_API_KEY / API_KEY, 또는 현재 폴더·상�
     --out PATH          전체 결과를 PATH에 JSON으로 저장 (화면에는 미리보기만)
     --max-pages N       DocumentSearch에서 기간 구간마다 가져올 페이지 수 (기본 1)
     --grep REGEX        DataFrame 결과에서 글자 칸이 REGEX에 맞는 행만 남김
-                        예: --grep "^(매출액|영업이익|당기순이익)$"
+                        예: --grep "^(수익|영업이익\(손실\)|총당기순이익)$"  (재무제표 계정명)
     --content-chars N   DocumentSearch 문서 요약(content) 길이 (기본 300)
 
 동작:
@@ -23,7 +23,7 @@ API 키는 환경변수 DEEPSEARCH_API_KEY / API_KEY, 또는 현재 폴더·상�
 
 예시:
     python query_api.py 'DocumentSearch(["news"],["economy"],"securities.name:삼성전자",count=100,page=1,date_from=20230101,date_to=20241231)'
-    python query_api.py 'GetFinancialStatements(삼성전자, consolidated=True, date_from=2020-01-01, date_to=2024-12-31)' --grep "^(매출액|영업이익)$"
+    python query_api.py 'GetFinancialStatements(삼성전자, consolidated=True, date_from=2020-01-01, date_to=2024-12-31)' --grep "^(수익|영업이익\(손실\))$"
     python query_api.py '삼성전자 종가 2024-06-01-2024-06-30'
     python query_api.py '/v1/topic-insight/insight?type=trending&section=economy&topicId=176349687&stream=false'
 
@@ -39,8 +39,8 @@ import sys
 from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _ds_common import (DeepSearchError, compute, dataframe_records, emit, fail,  # noqa: E402
-                        hint_for, pop_api_key, rest_get, result_pod, setup_stdout)
+from _ds_common import (DeepSearchError, compute, dataframe_records, emit, fail, fail_error,  # noqa: E402
+                        pop_api_key, rest_get, result_pod, setup_stdout)
 
 PREVIEW_ROWS = 10
 _DATE_RE = r'(\b{name}\s*=\s*)(["\']?)(\d{{4}})(-?)(\d{{2}})-?(\d{{2}})\2'
@@ -164,13 +164,23 @@ def run_document_search(api_key, query, max_pages, content_chars):
 
 # ---------------------------------------------------------------- 그 밖의 쿼리
 
+def run_rest(api_key, path):
+    """'/v1/...' REST 경로 (토픽 인사이트 등)."""
+    body = rest_get(api_key, path)
+    if not isinstance(body, dict):
+        body = {'data': body}
+    result = {'success': bool(body.get('success', True)), 'query': path, 'data': body.get('data', body)}
+    return result, {**result, 'data': str(result['data'])[:3000]}
+
+
 def run_generic(api_key, query, grep):
     body = compute(api_key, query)
     pod = result_pod(body)
     if pod is None:
         pods = (body.get('data') or {}).get('pods') or []
-        return ({'success': True, 'query': query, 'note': '결과 pod가 없습니다(쿼리 해석만 반환됨). 쿼리 문법을 확인하세요.',
-                 'pods': pods}, None)
+        result = {'success': True, 'query': query, 'note': '결과 pod가 없습니다(쿼리 해석만 반환됨). 쿼리 문법을 확인하세요.',
+                  'pods': pods}
+        return result, result
 
     pod_class = pod.get('class', '')
     content = pod.get('content', {})
@@ -184,13 +194,12 @@ def run_generic(api_key, query, grep):
 
     total_rows = len(records)
     if grep:
-        rx = re.compile(grep)
-        records = [r for r in records if any(isinstance(v, str) and rx.search(v) for v in r.values())]
+        records = [r for r in records if any(isinstance(v, str) and grep.search(v) for v in r.values())]
     columns = list(records[0].keys()) if records else list(content.get('columns') or [])
     result = {'success': True, 'query': query, 'pod_class': pod_class, 'columns': columns,
               'row_count': len(records), 'rows': records}
     if grep:
-        result['grep'] = grep
+        result['grep'] = grep.pattern
         result['rows_before_grep'] = total_rows
     preview = {k: v for k, v in result.items() if k != 'rows'}
     preview['rows_preview'] = records[:PREVIEW_ROWS]
@@ -209,28 +218,22 @@ def main():
     p.add_argument('--content-chars', type=int, default=300)
     args = p.parse_args(rest)
     query = args.query.replace('\n', ' ').strip()
-
     try:
-        if query.startswith('/'):
-            body = rest_get(api_key, query)
-            result = {'success': bool(body.get('success', True)), 'query': query, 'data': body.get('data', body)}
-            preview = {**result, 'data': str(result['data'])[:3000]}
-        elif re.match(r'\s*DocumentSearch\s*\(', query):
-            result, preview = run_document_search(api_key, query, max(1, args.max_pages), args.content_chars)
-        else:
-            result, preview = run_generic(api_key, query, args.grep)
-    except DeepSearchError as e:
-        out = {'success': False, 'error': str(e), 'query': query}
-        if e.status:
-            out['http_status'] = e.status
-        hint = hint_for(str(e))
-        if hint:
-            out['hint'] = hint
-        fail(out.pop('error'), **out)
+        grep = re.compile(args.grep) if args.grep else None
     except re.error as e:
         fail(f'--grep 정규식 오류: {e}')
 
-    emit(result, preview or result, out=args.out, label=query)
+    try:
+        if query.startswith('/'):
+            result, preview = run_rest(api_key, query)
+        elif re.match(r'\s*DocumentSearch\s*\(', query):
+            result, preview = run_document_search(api_key, query, max(1, args.max_pages), args.content_chars)
+        else:
+            result, preview = run_generic(api_key, query, grep)
+    except DeepSearchError as e:
+        fail_error(e, query)
+
+    emit(result, preview, out=args.out, label=query)
 
 
 if __name__ == '__main__':

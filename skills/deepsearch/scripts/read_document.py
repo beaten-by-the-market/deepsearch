@@ -1,225 +1,118 @@
 #!/usr/bin/env python3
 """
-DeepSearch 문서 본문 읽기 스크립트
+DeepSearch 문서 본문 읽기 (애널리스트 보고서·IR PDF, 뉴스 HTML)
 
 사용법:
-    python read_document.py <URL_OR_QUERY> [--doc N]   # API 키는 .env / 환경변수에서
+    python read_document.py <URL>
+    python read_document.py '<DocumentSearch(...) 쿼리>' [--doc N]     # 검색 결과의 N번째(1부터) 문서
 
-모드 1 - URL 직접 지정:
+예시:
     python read_document.py "https://ddi-cdn.deepsearch.com/.../report.pdf"
-
-모드 2 - 검색 후 본문 읽기 (검색쿼리 + 문서번호):
     python read_document.py 'DocumentSearch(["research"],["company"],"securities.name:삼성전자",count=5,page=1)' --doc 1
 
-지원 형식:
-    - PDF (애널리스트 보고서, IR자료, 공시) → PyMuPDF로 텍스트 추출
-    - HTML (뉴스 기사) → 웹페이지 텍스트 추출
-
-의존성: requests, PyMuPDF (pip install pymupdf)
+추출:
+    - PDF → PyMuPDF로 앞 20페이지 텍스트 (pip install pymupdf)
+    - HTML → 태그를 지운 본문 앞 10,000자 (노이즈 포함 가능)
+    - 공시(DART)는 프레임 구조라 본문이 거의 안 나온다 → DART 링크를 안내할 것
+출력: 본문이 길면 전체를 파일로 저장하고 앞 4,000자만 출력
+API 키: .env / 환경변수 (검색 모드에서만 필요)
 """
 
-import sys
+import html
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _ds_common import emit, pop_api_key, setup_stdout  # noqa: E402
-import json
-import tempfile
 import re
-from urllib.parse import quote
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _ds_common import (DeepSearchError, compute, emit, fail, fail_error, pop_api_key,  # noqa: E402
+                        requests, result_pod, setup_stdout)
+
+PDF_MAX_PAGES = 20
+HTML_MAX_CHARS = 10_000
+PREVIEW_CHARS = 4_000
 
 
-def install_pymupdf():
-    """PyMuPDF가 없으면 설치"""
-    try:
-        import fitz
-        return True
-    except ImportError:
-        import subprocess
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pymupdf', '-q'])
-        return True
-
-
-def download_file(url, timeout=60):
-    """URL에서 파일 다운로드"""
-    import requests
-    requests.packages.urllib3.disable_warnings()
-    resp = requests.get(url, verify=False, timeout=timeout)
+def download(url, timeout=60):
+    resp = requests.get(url, verify=False, timeout=timeout, headers={'User-Agent': 'Mozilla/5.0'})
     resp.raise_for_status()
     return resp.content, resp.headers.get('Content-Type', '')
 
 
-def extract_pdf_text(pdf_bytes, max_pages=20):
-    """PDF에서 텍스트 추출"""
-    import fitz
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    pages = []
-    for i, page in enumerate(doc):
-        if i >= max_pages:
-            break
-        text = page.get_text().strip()
-        if text:
-            pages.append({
-                'page': i + 1,
-                'text': text
-            })
-    total_pages = doc.page_count
-    doc.close()
-    return pages, total_pages
-
-
-def extract_html_text(html_bytes, url):
-    """HTML에서 본문 텍스트 추출 (간단한 태그 제거)"""
+def pdf_text(data):
     try:
-        text = html_bytes.decode('utf-8', errors='replace')
-    except:
-        text = html_bytes.decode('euc-kr', errors='replace')
-
-    # HTML 태그 제거
-    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
-    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-    text = re.sub(r'<[^>]+>', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    # HTML 엔티티 디코딩
-    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
-    text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&nbsp;', ' ')
-    return text
+        import fitz  # PyMuPDF
+    except ImportError:
+        fail('PDF를 읽으려면 PyMuPDF가 필요합니다: pip install pymupdf '
+             '(또는 pip install -r skills/deepsearch/requirements.txt)')
+    with fitz.open(stream=data, filetype='pdf') as doc:
+        pages = [p.get_text().strip() for p in doc.pages(0, min(PDF_MAX_PAGES, doc.page_count))]
+        return '\n\n'.join(t for t in pages if t), doc.page_count, len(pages)
 
 
-def search_and_get_url(api_key, query, doc_index=0):
-    """DocumentSearch 실행 후 특정 문서의 URL과 메타데이터 반환"""
-    import requests
-    requests.packages.urllib3.disable_warnings()
+def html_text(data):
+    raw = data.decode('utf-8', errors='replace')
+    if raw.count('�') > 50:          # UTF-8이 아니면 EUC-KR 시도
+        raw = data.decode('euc-kr', errors='replace')
+    raw = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', raw, flags=re.S | re.I)
+    text = html.unescape(re.sub(r'<[^>]+>', ' ', raw))
+    return re.sub(r'\s+', ' ', text).strip()
 
-    headers = {'Authorization': f'Basic {api_key}'}
-    clean_query = query.replace('\n', '').strip()
-    url = f'https://api.deepsearch.com/v1/compute?input={quote(clean_query, safe="")}'
 
-    resp = requests.get(url, headers=headers, verify=False, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
+def read_url(url):
+    data, ctype = download(url)
+    if url.lower().endswith('.pdf') or 'pdf' in ctype.lower() or data[:4] == b'%PDF':
+        text, total, extracted = pdf_text(data)
+        return {'success': True, 'type': 'pdf', 'url': url, 'total_pages': total,
+                'extracted_pages': extracted, 'text_length': len(text), 'text': text}
+    text = html_text(data)
+    return {'success': True, 'type': 'html', 'url': url, 'text_length': len(text), 'text': text[:HTML_MAX_CHARS]}
 
-    if not data.get('success', False):
-        return None, "API 요청 실패"
 
-    pods = data.get('data', {}).get('pods', [])
-    if len(pods) < 2:
-        return None, "검색 결과 없음"
-
-    content = pods[1].get('content', {})
-    docs = content.get('data', {}).get('docs', [])
-
+def find_document(api_key, query, index):
+    pod = result_pod(compute(api_key, query))
+    docs = (((pod or {}).get('content') or {}).get('data') or {}).get('docs') or []
     if not docs:
-        return None, "문서가 없습니다"
-
-    if doc_index >= len(docs):
-        return None, f"문서 {doc_index + 1}번이 없습니다 (총 {len(docs)}건)"
-
-    doc = docs[doc_index]
-    return doc, None
-
-
-def read_document(url):
-    """URL에서 문서 다운로드 및 텍스트 추출"""
-    content_bytes, content_type = download_file(url)
-
-    is_pdf = (
-        url.lower().endswith('.pdf') or
-        'pdf' in content_type.lower() or
-        content_bytes[:4] == b'%PDF'
-    )
-
-    if is_pdf:
-        install_pymupdf()
-        pages, total_pages = extract_pdf_text(content_bytes)
-        full_text = '\n\n'.join([p['text'] for p in pages])
-        return {
-            'success': True,
-            'type': 'pdf',
-            'url': url,
-            'total_pages': total_pages,
-            'extracted_pages': len(pages),
-            'text_length': len(full_text),
-            'text': full_text
-        }
-    else:
-        text = extract_html_text(content_bytes, url)
-        return {
-            'success': True,
-            'type': 'html',
-            'url': url,
-            'text_length': len(text),
-            'text': text[:10000]  # HTML은 노이즈가 많으므로 10K로 제한
-        }
-
-
-def _emit_text(result, label):
-    """본문이 길면 전체를 파일로 저장하고 앞부분만 출력."""
-    preview = dict(result)
-    if isinstance(preview.get('text'), str) and len(preview['text']) > 4000:
-        preview['text'] = preview['text'][:4000] + ' …(이하 생략, 전체는 saved_to 파일)'
-    emit(result, preview, label=label)
+        fail('검색 결과에 문서가 없습니다.', query=query)
+    if index >= len(docs):
+        fail(f'{index + 1}번 문서가 없습니다 (이 페이지 {len(docs)}건).', query=query)
+    return docs[index]
 
 
 def main():
     setup_stdout()
-    api_key, args = pop_api_key(sys.argv[1:])
-
-    # --doc 옵션 파싱
-    doc_index = 0
+    args = sys.argv[1:]
+    index = 0
     if '--doc' in args:
-        idx = args.index('--doc')
-        if idx + 1 < len(args):
-            doc_index = int(args[idx + 1]) - 1  # 1-based → 0-based
-        del args[idx:idx + 2]
+        i = args.index('--doc')
+        try:
+            index = int(args[i + 1]) - 1
+        except (IndexError, ValueError):
+            fail('--doc 뒤에 1부터 시작하는 번호가 필요합니다.')
+        del args[i:i + 2]
+    if not args:
+        fail("Usage: python read_document.py <URL | 'DocumentSearch(...)'> [--doc N]")
 
-    if len(args) < 1:
-        print(json.dumps({
-            'success': False,
-            'error': 'Usage: python read_document.py <URL_OR_QUERY> [--doc N]'
-        }, ensure_ascii=False, indent=2))
-        sys.exit(1)
-
-    target = args[0]
-
+    target = args[-1]
     try:
-        if target.startswith('http://') or target.startswith('https://'):
-            # 모드 1: URL 직접 지정
-            result = read_document(target)
-            _emit_text(result, target)
+        if target.startswith(('http://', 'https://')):
+            result, label = read_url(target), target
         else:
-            # 모드 2: 검색 후 읽기
-            doc, error = search_and_get_url(api_key, target, doc_index)
-            if error:
-                print(json.dumps({'success': False, 'error': error}, ensure_ascii=False, indent=2))
-                sys.exit(1)
+            api_key, _ = pop_api_key(args[:-1])
+            doc = find_document(api_key, target, index)
+            if not doc.get('content_url'):
+                fail('문서에 content_url이 없습니다.', title=doc.get('title', ''))
+            result = read_url(doc['content_url'])
+            result['meta'] = {k: doc.get(k, '') for k in ('title', 'publisher', 'created_at', 'category', 'section')}
+            label = doc.get('title') or doc['content_url']
+    except DeepSearchError as e:
+        fail_error(e, target)
+    except requests.RequestException as e:
+        fail(f'문서 다운로드 실패: {e}')
 
-            meta = {
-                'title': doc.get('title', ''),
-                'publisher': doc.get('publisher', ''),
-                'created_at': doc.get('created_at', ''),
-                'category': doc.get('category', ''),
-                'section': doc.get('section', ''),
-            }
-
-            content_url = doc.get('content_url', '')
-            if not content_url:
-                print(json.dumps({
-                    'success': False,
-                    'error': '문서 URL이 없습니다',
-                    'meta': meta
-                }, ensure_ascii=False, indent=2))
-                sys.exit(1)
-
-            result = read_document(content_url)
-            result['meta'] = meta
-            _emit_text(result, meta.get('title') or content_url)
-
-    except Exception as e:
-        print(json.dumps({
-            'success': False,
-            'error': str(e)
-        }, ensure_ascii=False, indent=2))
-        sys.exit(1)
+    preview = dict(result)
+    if len(preview['text']) > PREVIEW_CHARS:
+        preview['text'] = preview['text'][:PREVIEW_CHARS] + ' …(이하 생략, 전체는 saved_to 파일)'
+    emit(result, preview, label=label)
 
 
 if __name__ == '__main__':
