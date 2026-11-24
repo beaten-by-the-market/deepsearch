@@ -1,3 +1,6 @@
+<!-- 이 파일은 docs/reference/sync_from_gitbook.py로 생성합니다 (2026-11-25). 원문: https://help.deepsearch.com/dp/ — 기업 임원, 주식 부자. 직접 고치지 말고, 레포 메모는 repo-memo 마커 안에 쓰세요. -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/people -->
 # 인물
 
 ## 기업 임원 검색
@@ -8,8 +11,8 @@ FindPeopleByName
 FindPeopleByBirthday
 ```
 
-{% content-ref url="people/undefined" %}
-[undefined](https://help.deepsearch.com/dp/api/func/people/undefined)
+{% content-ref url="/pages/-M28Nktv0CN1KtGcyHis" %}
+[기업 임원 검색](https://help.deepsearch.com/dp/api/func/people/undefined.md)
 {% endcontent-ref %}
 
 ## 주식 부자 목록 추출
@@ -18,27 +21,31 @@ FindPeopleByBirthday
 FindRichestShareholders
 ```
 
-{% content-ref url="people/undefined-1" %}
-[undefined-1](https://help.deepsearch.com/dp/api/func/people/undefined-1)
+{% content-ref url="/pages/-M28OQlXRrEqP0AHzSK\_" %}
+[주식 부자 목록 추출](https://help.deepsearch.com/dp/api/func/people/undefined-1.md)
 {% endcontent-ref %}
 
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined -->
 # 기업 임원 검색
 
 다음과 같은 함수를 사용할 수 있습니다.
 
-{% content-ref url="undefined/findpersonbio" %}
-[findpersonbio](https://help.deepsearch.com/dp/api/func/people/undefined/findpersonbio)
+{% content-ref url="/pages/-M27wx8Z2yMdUbIfM7t5" %}
+[FindPersonBio](https://help.deepsearch.com/dp/api/func/people/undefined/findpersonbio.md)
 {% endcontent-ref %}
 
-{% content-ref url="undefined/findpeoplebyname" %}
-[findpeoplebyname](https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebyname)
+{% content-ref url="/pages/-M27wzs354A\_RfXu6w44" %}
+[FindPeopleByName](https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebyname.md)
 {% endcontent-ref %}
 
-{% content-ref url="undefined/findpeoplebybirthday" %}
-[findpeoplebybirthday](https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebybirthday)
+{% content-ref url="/pages/-M27wy\_v9ia-zUES3DRq" %}
+[FindPeopleByBirthday](https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebybirthday.md)
 {% endcontent-ref %}
 
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined/findpersonbio -->
 # FindPersonBio
+
+이름과 생년월일을 입력하면 해당 인물의 전체 이력을 꺼내옵니다.
 
 ### Function specification
 
@@ -79,6 +86,7 @@ NICE:380725	2015-09-30	삼성전자	부회장
 ...
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebyname -->
 # FindPeopleByName
 
 ### Function specification
@@ -125,7 +133,10 @@ name	birthday	symbol	entity_name	last_date	position
 ...
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined/findpeoplebybirthday -->
 # FindPeopleByBirthday
+
+생일로 인물을 검색합니다. 오늘 생일을 맞은 인물, 또는 앞으로 일주일 이내 생일이 다가오는 인물을 보여주는 용도로 활용할 수 있습니다.
 
 ### Function specification
 
@@ -175,15 +186,23 @@ name	birthday	symbol	entity_name	last_date	position
 ...
 ```
 
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** 예시와 인자를 바꾼 호출 모두 내부 서비스 타임아웃(`KernelError: ... Read timed out`)으로 결과를 받지 못했습니다(2회 시도).
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined-1 -->
 # 주식 부자 목록 추출
 
 다음과 같은 함수를 사용할 수 있습니다.
 
-{% content-ref url="undefined-1/findrichestshareholders" %}
-[findrichestshareholders](https://help.deepsearch.com/dp/api/func/people/undefined-1/findrichestshareholders)
+{% content-ref url="/pages/-M27wyDZuu9ib5ksztdM" %}
+[FindRichestShareholders](https://help.deepsearch.com/dp/api/func/people/undefined-1/findrichestshareholders.md)
 {% endcontent-ref %}
 
+<!-- source: https://help.deepsearch.com/dp/api/func/people/undefined-1/findrichestshareholders -->
 # FindRichestShareholders
+
+주어진 기간 (date\_from \~ date\_to) 내에서 각 기업별 가장 마지막 주주 목록 사용하여, 현재 보유 주식의 가치가 가장 높은 주주 리스트를 추출합니다.
 
 ### Function specification
 
@@ -225,4 +244,6 @@ Bank of New York Mellon	8,186,285,810,756.00
 ...
 ```
 
-
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** 예시와 인자를 바꾼 호출 모두 내부 서비스 타임아웃(`KernelError: ... Read timed out`)으로 결과를 받지 못했습니다(2회 시도).
+<!-- repo-memo:end -->

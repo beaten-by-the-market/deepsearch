@@ -92,7 +92,9 @@ GetFinancialStatements(삼성전자, report_ids="BalanceSheet") # 특정 제표�
 | is_annual | True / False | 연간/분기 포함 |
 | report_ids | "BalanceSheet", "Income", "CashFlow", "Ratio" | 특정 제표만 (미지정시 전체) |
 
-**❌ 기업명에 따옴표 금지:** `GetFinancialStatements("삼성중공업")` → 403. `GetFinancialStatements(삼성중공업)` → 정상
+**기업명은 따옴표 없이:** `GetFinancialStatements(삼성중공업)`
+
+**계정명(`name_ko`):** 매출액 = `수익`, 영업이익 = `영업이익(손실)`, 당기순이익 = `총당기순이익`(지배주주분 `당기순이익지배기업지분`), `자산총계`·`부채총계`·`자본총계`. 필요한 계정만 `query_api.py --grep`으로 거르세요(SKILL.md 규칙 1).
 
 ### 자연어 쿼리 (주가/시장 데이터 전용)
 
@@ -178,7 +180,7 @@ FindPeopleByName(name)
 
 | 제한 | 설명 |
 |------|------|
-| 기간 제한 | DocumentSearch **최대 1년**, 초과 시 6개월 단위 분할 |
+| 기간 제한 | DocumentSearch **최대 1년**(초과 시 HTTP 413). `query_api.py`가 1년 단위로 자동 분할 |
 | 영업이익 연도비교 | `2024 영업이익 < 0 and 2023 영업이익 > 0` 불가 → turnaround_screener.py 사용 |
 | 복수기업+연도범위 | `삼성전자 LG전자 영업이익 2020-2024` 불가 → `GetFinancialStatements` 개별 호출 |
 | 한글 근접검색 | `"인수 합병"~5` 불가 |

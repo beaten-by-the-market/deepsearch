@@ -14,7 +14,7 @@ KRX 상장사 뉴스/공시/리서치 문서 검색에 사용한다.
    → 이 모듈의 `document_search`는 1년 초과 윈도우를 ≤1년 청크로 자동 분할·병합한다.
 2. **문서 리스트 키는 `docs`** (NOT `documents`). 직관과 어긋나 0건으로 오인하기 쉽다.
    파싱 경로: `data["pods"][1]["content"]["data"]["docs"]`.
-3. **에러는 HTTP 200 + `data.exceptions[]`** 로 온다(status code로는 안 보임).
+3. **에러 원인은 `data.exceptions[]`** 에 있다. HTTP 200으로 오기도 하고, 1년 초과는 HTTP 413 본문에 들어 있다.
    → 결과가 비면 `data.exceptions`부터 확인. `_compute`가 있으면 RuntimeError로 올린다.
 4. **한글/괄호는 `urllib.parse.quote` 필수**. 콘솔은 Windows CP949라 한글이 깨지니
    결과는 UTF-8 파일로 덤프해 확인한다.
@@ -86,7 +86,7 @@ def _compute(query, api_key=None, retries=3, timeout=40):
     - URL 인코딩(`urllib.parse.quote`) + `Authorization: Basic` + verify=False
     - 네트워크 오류 시 최대 `retries`회 재시도(2초 간격)
     - 응답의 `data.exceptions`가 비어있지 않으면 RuntimeError로 올림
-      (1년 초과 RequestEntityTooLarge 등 — 에러는 HTTP 200 + exceptions로 전달됨)
+      (1년 초과 RequestEntityTooLarge 등 — HTTP 200 또는 413 본문의 exceptions로 전달됨)
 
     Returns:
         dict: 파싱된 JSON 응답 (`data` 포함)
@@ -104,7 +104,7 @@ def _compute(query, api_key=None, retries=3, timeout=40):
         try:
             resp = requests.get(url, headers=headers, verify=False, timeout=timeout)
             data = resp.json()
-            # 에러는 HTTP 200 + data.exceptions[]로 온다 → 먼저 확인
+            # 에러 원인은 data.exceptions[] (HTTP 200 또는 413 본문) → 먼저 확인
             exc = (data.get("data") or {}).get("exceptions") or []
             if exc:
                 raise RuntimeError(f"DeepSearch exceptions: {exc}")

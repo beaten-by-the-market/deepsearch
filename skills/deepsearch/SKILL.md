@@ -1,12 +1,20 @@
 ---
 name: deepsearch
-description: "DeepSearch API 통합 스킬. 문서검색, 기업재무 조회, 스크리닝, 멀티스텝 분석, KRX 업무를 지원합니다."
+description: "DeepSearch API(api.deepsearch.com)로 한국 기업 데이터를 조회·분석한다. 뉴스·증권사 리포트·공시/IR·특허 검색과 트렌드·감성, 상장사·외감 비상장사 재무제표(GetFinancialStatements), 주가·PER·PBR·시가총액, 조건 스크리닝, 일일 시황 리포트, 여러 데이터를 엮은 멀티스텝 분석(뉴스+주가, 공시 vs 뉴스 등)에 사용한다. 사용자가 DeepSearch/딥서치를 언급하거나, DeepSearch API 키가 있는 프로젝트에서 KRX 상장사 문서·재무·주가 데이터를 요청하면 적용한다."
 ---
 
 # DeepSearch 통합 스킬
 
 문서검색, 기업/재무 데이터, 스크리닝/분석을 하나의 스킬로 처리합니다.
 **특히 여러 데이터 소스를 연결하는 멀티스텝 분석에 특화**되어 있습니다.
+
+## 시작하기 (먼저 읽기)
+
+- **경로:** 이 문서의 `${CLAUDE_SKILL_DIR}`는 이 SKILL.md가 있는 폴더입니다. 스킬로 설치하지 않고 레포를 클론해 직접 읽는 경우 `skills/deepsearch`로 바꿔 쓰세요.
+- **설치:** `pip install -r ${CLAUDE_SKILL_DIR}/requirements.txt` (requests, PyMuPDF)
+- **호출:** `python ${CLAUDE_SKILL_DIR}/scripts/query_api.py "쿼리"`. API 키는 스크립트가 직접 찾습니다(아래 "API 키").
+- **큰 결과는 파일로 저장됩니다.** 결과 JSON이 2만 자를 넘으면 스크립트가 임시 폴더에 저장하고 `saved_to` 경로와 미리보기만 출력합니다. 그 파일을 Python으로 읽어 필요한 부분만 쓰세요. 파일 내용을 통째로 다시 출력하지 마세요.
+- **다른 자료:** `references/`(호출식·검증 사례), 레포 `research/`(데이터 정의 검증 노트). 레포 `docs/reference/`의 원본 API 문서는 크니 이 문서에 없는 함수를 찾을 때만 grep으로 검색하세요.
 
 ## ⚠️ 최우선 라우팅 규칙
 
@@ -31,8 +39,23 @@ GetAvailableFinancialStatements(NICE코드 또는 KRX코드)
 # 2단계: 전체 재무제표 조회 (507개 계정항목 한 번에 반환)
 GetFinancialStatements(기업명, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)
 ```
-- **기업명에 따옴표 금지:** `GetFinancialStatements("삼성중공업")` → 403 에러. 따옴표 없이 `GetFinancialStatements(삼성중공업)` 사용
-- 507개 계정항목이 한 번에 반환됩니다 → 매출액, 영업이익 등 필요한 항목만 필터링하여 보여주세요
+- 기업명은 따옴표 없이 씁니다: `GetFinancialStatements(삼성중공업)`
+- 수백 개 계정이 연도별로 한 번에 반환됩니다(삼성전자 1년치 507행, 원본 응답 수백 KB). **`--grep`으로 필요한 계정만 남기세요.**
+- **계정명은 `매출액`이 아닙니다.** `name_ko` 기준으로 아래 이름을 쓰세요. `--grep 매출`처럼 부분일치로 걸면 매출원가·매출채권까지 섞입니다.
+
+| 찾는 항목 | `name_ko` | report_id / account_id |
+|---|---|---|
+| 매출액 | `수익` | 12 / 1000 |
+| 매출원가 · 매출총이익 | `매출원가` · `매출총이익(손실)` | 12 / 2000 · 3000 |
+| 영업이익 | `영업이익(손실)` | 12 / 5000 |
+| 당기순이익 | `총당기순이익` (지배주주분: `당기순이익지배기업지분`) | 12 / 8200 (9061) |
+| 자산·부채·자본총계 | `자산총계` · `부채총계` · `자본총계` | 11 / 5000 · 8000 · 8900 |
+
+report_id 11 = 재무상태표, 12 = 손익계산서, 19 = 재무비율. (삼성전자·삼성중공업 2024년 값으로 확인, 2026-11-25)
+
+```bash
+python ${CLAUDE_SKILL_DIR}/scripts/query_api.py 'GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, date_from=2020-01-01, date_to=2024-12-31)' --grep '^(수익|영업이익\(손실\)|총당기순이익)$'
+```
 - 자연어 쿼리는 **주가/PER/PBR/시가총액** 등 시장 데이터에만 사용하세요
 
 ### 규칙 2: 시황 분석 → market_overview.py 필수
@@ -47,7 +70,7 @@ GetFinancialStatements(기업명, report_type="IFRS", consolidated=True, date_fr
 
 **✅ 반드시 이렇게 하세요 (RIGHT):**
 ```bash
-python {baseDir}/scripts/market_overview.py "API_KEY" "YYYY-MM-DD"
+python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py "YYYY-MM-DD"
 ```
 이 스크립트 **하나만 실행**하면 지수·규모별·시총등락·뉴스언급·헤드라인·토픽·감성 7개 섹션이 자동 생성됩니다.
 스크립트 실행 후 JSON 결과를 아래 마크다운 템플릿으로 변환하여 사용자에게 보여주세요.
@@ -66,12 +89,19 @@ DeepSearch 주가(시가·고가·저가·종가)는 **수정주가뿐이고 원
 - **사용자가 원주가(당시 실제 가격)를 원하면:** `market_cap ÷ shares_outstanding`으로 계산했다고 밝히세요.
 - **2020년 이전 주가:** 자연어 쿼리로는 나오지 않습니다. `GetStockPrices`로 조회하세요(Section B).
 
+### 규칙 4: 과거 재무값·BPS/EPS로 백테스트하거나 시점을 따지면 → 한계를 먼저 밝힘
+
+- **과거 재무제표 값의 기준이 섞여 있습니다.** `GetFinancialStatements`의 과거 연도 값은 원래 공시값인지, 다음 해 보고서의 재작성값인지 일관되지 않습니다. 재작성된 회사·연도의 약 3/4은 재작성값, 1/4은 원래값이고, 구분 필드나 옵션은 없습니다. IFRS17 보험사의 2022년은 대부분 재작성 전 값입니다. "그 시점에 알 수 있던 값"이 꼭 필요하면 OpenDART에서 받으세요.
+- **시장데이터 BPS·EPS(따라서 PBR·PER)에는 look-ahead가 있습니다.** FY N 값이 N+1년 첫 거래일부터 붙어 있는데, 그때는 아직 결산 공시 전입니다. 백테스트에서는 사업보고서 공시 시점(보통 3월 말) 이후로 밀어 쓰세요.
+- **BPS 정의는 하나뿐입니다.** 연결 지배기업소유주지분 ÷ (보통주+우선주 − 자기주식), 직전 연말 기준. `별도`·`분기` 같은 단어를 붙여도 무시됩니다. 다른 정의가 필요하면 `GetFinancialStatements`로 직접 계산하세요.
+
+근거: 레포 `research/restatement/`, `research/pbr_bps/` (검증 2026-11-20)
+
 ## API 키
 
-- 사용자가 대화 중 base64 문자열이나 API 키를 제공하면 그것이 API 키입니다. 즉시 사용하세요.
-- `.env` 파일이 있으면 `source .env && echo $API_KEY`로 읽으세요.
-- 둘 다 없으면 사용자에게 **한 번만** 요청하세요. 이후 같은 대화에서 반복 요청하지 마세요.
-- `.env` 파일을 찾기 위해 여러 경로를 탐색하지 마세요. 없으면 바로 사용자에게 물어보세요.
+- **스크립트가 직접 찾습니다.** 순서: 환경변수 `DEEPSEARCH_API_KEY` 또는 `API_KEY` → 현재 폴더와 상위 폴더의 `.env` → 스킬 폴더 상위의 `.env`. raw `id:secret` 형식이면 base64로 자동 변환합니다.
+- **키 값을 화면에 내지 마세요.** `.env`를 `cat`/`echo`하거나 키를 명령 인자로 넣으면 대화 기록에 남습니다. (첫 인자로 키를 넘기는 구 방식도 동작은 합니다)
+- 키를 못 찾으면 스크립트가 안내 메시지를 냅니다. 그때 사용자에게 **한 번만** 요청하고, 프로젝트 루트 `.env`에 `API_KEY=<키>` 한 줄로 저장하세요(`.gitignore`에 `.env`가 있는지 확인).
 
 ## 데이터 출처
 
@@ -187,10 +217,10 @@ DocumentSearch 결과의 `content` 필드는 100~500자 요약만 포함됩니�
 **사용 패턴:**
 ```bash
 # 방법 1: content_url을 직접 지정
-python {baseDir}/scripts/read_document.py "API_KEY" "https://ddi-cdn.deepsearch.com/.../report.pdf"
+python ${CLAUDE_SKILL_DIR}/scripts/read_document.py "https://ddi-cdn.deepsearch.com/.../report.pdf"
 
 # 방법 2: 검색 후 N번째 문서 본문 읽기
-python {baseDir}/scripts/read_document.py "API_KEY" 'DocumentSearch(["research"],["company"],"securities.name:삼성전자",count=5,page=1)' --doc 1
+python ${CLAUDE_SKILL_DIR}/scripts/read_document.py 'DocumentSearch(["research"],["company"],"securities.name:삼성전자",count=5,page=1)' --doc 1
 ```
 
 **활용 시나리오:**
@@ -202,17 +232,16 @@ python {baseDir}/scripts/read_document.py "API_KEY" 'DocumentSearch(["research"]
 
 ### ⚠️ DocumentSearch 실전 함정 (검증됨 — 같은 시행착오 금지)
 
-> 출처: `notes/HANDOFF_DocumentSearch_news_20260610.md` / 정식 클라이언트: `newsscrap/ds_client.py`
+> 출처: `notes/HANDOFF_DocumentSearch_news_20260610.md`
 
-1. **기간 1년 한도**: 비로그인(Basic auth)은 검색 기간이 **1년을 넘으면 결과가 통째로 0건**.
-   증상이 "0건"이라 fields·OR 괄호를 의심하게 되지만 **둘 다 무죄**. → 초과분은 **≤1년 청크로 분할** 후 `content_url` dedup·병합.
-2. **결과가 0이면 가장 먼저 `data["exceptions"]` 확인**. 에러는 **HTTP 200 + `data.exceptions[]`** 로 온다
-   (status code엔 안 보임). 1년 초과는 `RequestEntityTooLarge: "Not allowed to search more than 1 year if not logged in"`.
-3. **문서 리스트 키는 `docs`** (NOT `documents`). 경로: `data["pods"][1]["content"]["data"]["docs"]`.
-4. **URL 인코딩 필수**(`urllib.parse.quote`) — 한글·괄호·`&`. Windows 콘솔은 CP949라 한글 깨짐 → **UTF-8 파일로 덤프**해 확인.
+1. **기간 1년 한도**: Basic auth로는 DocumentSearch 기간이 **1년을 넘으면 결과를 못 받습니다**(HTTP 413, `RequestEntityTooLarge: Not allowed to search more than 1 year if not logged in`). fields나 OR 괄호 문제가 아닙니다.
+   → **`query_api.py`가 1년 이하 구간으로 자동 분할**하고 `content_url`로 중복 제거해 최신순으로 합칩니다. 구간별 건수는 결과의 `windows`에 있습니다. DocumentTrends는 2년 범위도 정상입니다(2026-11-25 확인).
+2. **에러 원인은 `data.exceptions[]`에 있습니다**(HTTP 200이어도 올 수 있음). `query_api.py`는 이를 `error`와 `hint`로 보여줍니다. 결과가 0건이면 이것부터 보세요.
+3. **페이지:** 기본은 쿼리의 `page` 한 페이지만 가져옵니다. 더 필요하면 `--max-pages N`(구간마다 N페이지). `count`는 최대 100.
+4. 직접 호출할 때만: 문서 리스트 키는 `docs`(NOT `documents`, 경로 `data["pods"][1]["content"]["data"]["docs"]`), 쿼리는 `urllib.parse.quote(query, safe="")`로 인코딩(한글·괄호·`&`), Windows 콘솔은 CP949라 결과는 UTF-8 파일로 확인.
 
 ### 제한사항
-- **DocumentSearch 기간은 최대 1년.** 초과 시 ≤1년 단위로 분할(`ds_client.document_search`가 자동 처리).
+- **DocumentSearch 기간은 최대 1년.** `query_api.py`가 자동 분할합니다.
 - interval: `1y`, `1M`, `1w`, `1d`, `1h`, `1m`
 
 ---
@@ -242,7 +271,7 @@ GetFinancialStatements(삼성전자, report_ids="BalanceSheet") # 특정 제표�
 | is_annual | True / False | 연간/분기 포함 |
 | report_ids | "BalanceSheet", "Income", "CashFlow", "Ratio" | 특정 제표만 조회 (미지정시 전체) |
 
-**❌ 기업명에 따옴표 금지:** `GetFinancialStatements("삼성중공업")` → 403. `GetFinancialStatements(삼성중공업)` → 정상
+**계정명:** 매출액은 `수익`, 영업이익은 `영업이익(손실)`, 당기순이익은 `총당기순이익`입니다(규칙 1의 표).
 
 **❌ 자연어 쿼리로 재무제표를 조회하지 마세요:**
 ```
@@ -308,6 +337,10 @@ GetCompanyShareholders("삼성전자")
 GetCompanyExecutives("삼성전자")
 GetFinancialStatements(삼성전자, report_type="IFRS", consolidated=True, date_from=2024-01-01, date_to=2024-12-31)
 GetAvailableFinancialStatements(KRX:005930)
+GetStockPrices(KRX:005930, columns=["close","volume","market_cap"], date_from=2018-01-01, date_to=2018-12-31)
+GetDartDividends(KRX:005930, date_from=2020-01-01, date_to=2024-12-31)      # 공시(정기보고서) 배당
+GetDartMajorityShareholders(KRX:005930, date_from=2024-01-01, date_to=2024-12-31)
+GetCompanyProductsSales(KRX:005930)                                         # 제품별 매출
 SearchTargetPrices("005930",date_from=20240101,date_to=20241231)
 FindConglomerateByName("삼성")
 GetConglomerateMembers("삼성")
@@ -370,8 +403,8 @@ GetFinancialStatements(채비, consolidated=False, date_from=2020-01-01, date_to
 
 ### 시가총액 상위 종목 + 등락률 (전용 스크립트)
 ```bash
-python {baseDir}/scripts/market_top_movers.py "API_KEY" kosdaq 150 2025-02-27
-python {baseDir}/scripts/market_top_movers.py "API_KEY" kospi 100 2025-02-27
+python ${CLAUDE_SKILL_DIR}/scripts/market_top_movers.py kosdaq 150 2025-02-27
+python ${CLAUDE_SKILL_DIR}/scripts/market_top_movers.py kospi 100 2025-02-27
 ```
 **용도:** "코스닥 시가총액 상위 150개 중 가장 많이 하락한 종목", "코스피 시총 상위 100개 등락률" 등
 내부에서 전체 종목 조회 → 개별 시가총액/종가 병렬 수집 → 시가총액 정렬 → 등락률 계산을 자동 수행합니다.
@@ -409,8 +442,8 @@ Mean(삼성전자 종가 2024-01-01-2024-12-31) → 평균 종가
 
 ### 적자전환/흑자전환 스크리닝 (전용 스크립트)
 ```bash
-python {baseDir}/scripts/turnaround_screener.py "API_KEY" loss 5000   # 적자전환, 매출 5000억+
-python {baseDir}/scripts/turnaround_screener.py "API_KEY" profit 1000 # 흑자전환, 매출 1000억+
+python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py loss 5000   # 적자전환, 매출 5000억+
+python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000 # 흑자전환, 매출 1000억+
 ```
 원리: `영업이익`의 연도간 비교가 API에서 불가하여 2단계 자동화 (현재 적자/흑자 추출 → 개별 2개년 조회 → 부호 전환 필터)
 
@@ -420,7 +453,7 @@ python {baseDir}/scripts/turnaround_screener.py "API_KEY" profit 1000 # 흑자�
 > 이 스크립트 하나가 7개 섹션(지수, 규모별, 시총 등락, 뉴스 언급, 헤드라인, 토픽, 감성)을 자동 병렬 수집합니다.
 
 ```bash
-python {baseDir}/scripts/market_overview.py "API_KEY" "YYYY-MM-DD"
+python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py "YYYY-MM-DD"
 ```
 
 **트리거 예시:** "오늘 시장 어때?", "2월 27일 시황 분석해줘", "마켓 리포트 만들어줘", "장 마감 정리", "시장 동향 알려줘"
@@ -441,99 +474,7 @@ python {baseDir}/scripts/market_overview.py "API_KEY" "YYYY-MM-DD"
 
 **출력 형식:** JSON → 아래 마크다운 템플릿으로 변환하여 표시
 
-**시황분석 리포트 출력 템플릿:**
-
-스크립트 실행 후 JSON 결과를 아래 형식으로 변환하여 사용자에게 보여주세요:
-
-```markdown
-# 📊 일일 시황분석 | YYYY-MM-DD (요일)
-
-> ℹ️ 주가 기준: 종가·시가·고가·저가는 수정주가입니다(액면분할·증자 소급 반영, 배당 미반영). 거래량·시가총액은 당일 실제 값입니다.
-
----
-
-## 시황 종합해석
-> 아래 데이터(지수, 등락, 뉴스, 감성 등)를 종합하여 **오늘 시장의 핵심 흐름을 3~5문장으로 요약**합니다.
-> 예: "KOSPI가 1% 하락하며 대형주 중심 약세를 보였으나, 코스닥 대형주는 +1.2% 상승하며 차별화. 자동차 업종이 수출 호조에 힘입어 강세, 전력/에너지 업종은 약세. 시장 감성은 긍정 우세(37%)이나 전일 대비 소폭 후퇴."
-
----
-
-## 1. 시장 지수
-| 지수 | 종가 | 전일대비 | 등락률 | 시가 | 고가 | 저가 | 거래량 |
-|------|------|---------|--------|------|------|------|--------|
-| KOSPI | 6,244.13 | ▼63.14 | -1.00% | 6,197.49 | 6,347.41 | 6,153.87 | 1,166,058 |
-| KOSDAQ | 1,192.78 | ▲4.63 | +0.39% | 1,175.40 | 1,201.89 | 1,173.16 | 1,262,964 |
-| KOSPI200 | 933.34 | ▼10.68 | -1.13% | 924.59 | 951.62 | 918.77 | 366,998 |
-
-## 2. 규모별 동향
-| 구분 | 코스피 대형주 | 코스피 중형주 | 코스피 소형주 | 코스닥 대형주 | 코스닥 중형주 | 코스닥 소형주 |
-|------|------------|------------|------------|------------|------------|------------|
-| 등락률 | -1.03% | -0.84% | -0.42% | **+1.20%** | -0.37% | -1.08% |
-
-> 💡 **강세:** 코스닥 대형주(+1.20%) | **약세:** 코스닥 소형주(-1.08%)
-
-## 3. 시가총액 상위 등락
-**▲ 상승 상위**
-| 종목 | 종가 | 등락률 | 시가총액 |
-|------|------|--------|---------|
-| 현대차 | 674,000 | **+10.67%** | 138.0조 |
-| LG화학 | 417,500 | +7.05% | 29.5조 |
-| ... | | | |
-
-**▼ 하락 상위**
-| 종목 | 종가 | 등락률 | 시가총액 |
-|------|------|--------|---------|
-| 한국전력 | 58,500 | **-7.58%** | 37.6조 |
-| SK스퀘어 | 645,000 | -5.01% | 85.2조 |
-| ... | | | |
-
-## 4. 업종별 동향
-> 시총 상위 등락(섹션 3)의 종목들을 업종별로 그룹핑하여 어떤 업종이 강세/약세인지 요약합니다.
-
-| 업종 | 대표 종목 | 동향 |
-|------|----------|------|
-| 자동차 | 현대차(+10.67%), 기아(+5.2%) | **강세** — 수출 호조 |
-| 반도체 | 삼성전자(+0.05%), SK하이닉스(-1.2%) | 혼조 |
-| 에너지/전력 | 한국전력(-7.58%) | **약세** — 요금 동결 우려 |
-| ... | | |
-
-## 5. 뉴스 언급 상위 종목
-| 순위 | 종목 | 언급 건수 |
-|------|------|---------|
-| 1 | 현대차 | 116건 |
-| 2 | 삼성전자 | 103건 |
-| 3 | NAVER | 89건 |
-| ... | | |
-
-## 6. 주요 시장 뉴스 (총 N건)
-| # | 제목 | 언론사 | 감성 | 관련종목 |
-|---|------|--------|------|---------|
-| 1 | 기사 제목 | KBS | 중립 | NAVER |
-| 2 | ... | | | |
-
-## 7. 트렌딩 토픽
-> *트렌딩 토픽은 DeepSearch가 경제 뉴스를 클러스터링하여 자동 추출한 이슈 묶음입니다. 유사한 주제의 기사들이 그룹핑되어 하나의 '토픽'으로 생성되며, 관련 키워드와 언급된 상장사가 함께 제공됩니다. 당일 데이터는 실시간 토픽(SearchTrendingTopics), 과거 데이터는 과거 토픽(SearchHistoricalTopics)에서 조회됩니다.*
-
-| # | 토픽 | 키워드 | 관련종목 |
-|---|------|--------|---------|
-| 1 | 한전 역대 최대 13.5조 이익... | 전기요금, 200조대 | 한국전력 |
-| 2 | ... | | |
-
-## 8. 시장 감성
-| 긍정 | 부정 | 중립 | 판정 |
-|------|------|------|------|
-| 37.1% (655건) | 4.6% (82건) | 58.3% (1,029건) | **긍정 우세** |
-
----
-📌 데이터 출처: KRX 한국거래소 / 코스콤 시장데이터 | NICE평가정보 재무데이터 | 국내 주요 언론사
-```
-
-**포맷팅 규칙:**
-- 등락률: 상승은 ▲ + 빨간(bold), 하락은 ▼ + 파란(bold)
-- 금액: 억/조 단위 변환 (예: 138,006,734,284,000 → 138.0조)
-- 거래량: 천 단위 콤마
-- 비거래일(주말/공휴일): 섹션 1-2는 "(직전 거래일 N월 N일 기준)" 부기
-- 실패한 섹션: 해당 영역에 "데이터 조회 실패" 표시하고 나머지는 정상 표시
+**출력 템플릿:** [references/market_overview_template.md](references/market_overview_template.md)를 읽고 그 형식(종합해석 → 지수 → 규모별 → 시총 등락 → 업종 → 뉴스 언급 → 주요 뉴스 → 토픽 → 감성)으로 변환하세요. 맨 앞에 규칙 3의 수정주가 안내를 넣습니다.
 
 ---
 
@@ -692,10 +633,15 @@ DocumentSearch(["company"],["disclosure"],"인수 or 합병",count=100,page=1,da
 ## 실행
 
 ```bash
-python {baseDir}/scripts/query_api.py "API_KEY" "쿼리"
+python ${CLAUDE_SKILL_DIR}/scripts/query_api.py "쿼리"                        # 기본
+python ${CLAUDE_SKILL_DIR}/scripts/query_api.py "쿼리" --out result.json        # 전체 결과를 파일로
+python ${CLAUDE_SKILL_DIR}/scripts/query_api.py "DocumentSearch(...)" --max-pages 3   # 페이지 더 받기
+python ${CLAUDE_SKILL_DIR}/scripts/query_api.py "GetFinancialStatements(...)" --grep '^(수익|영업이익\(손실\))$'  # 계정 필터
 ```
 
-멀티스텝 분석은 각 단계별로 위 스크립트를 순차 호출하세요.
+- 결과 형식: DocumentSearch는 `total_matches`, `windows`, `docs[]`(title, publisher, created_at, content 300자, content_url, securities, polarity, esg). DataFrame 결과(재무·주가·스크리닝)는 `columns`, `row_count`, `rows[]`(행 단위 dict).
+- 출력에 `saved_to`가 있으면 전체 결과가 그 파일에 있습니다.
+- 멀티스텝 분석은 단계별로 위 스크립트를 순차 호출하세요.
 
 ### 대량 반복 조회 시 사용자 확인 필수
 
@@ -802,31 +748,34 @@ python {baseDir}/scripts/query_api.py "API_KEY" "쿼리"
 > - 이 기업들의 **최근 뉴스 동향**을 확인해드릴까요?
 > - **주가 수익률 시뮬레이션**을 해볼까요?
 
-## 이 스킬이 커버하지 않는 DeepSearch 기능
+## 이 스킬에 예시가 없는 DeepSearch 기능
 
-**DeepSearch API에는 있으나 현재 미포함:**
-| API 함수 | 설명 | 용도 예시 |
-|---------|------|----------|
-| GetCompanyHistory | 기업 연혁 | "삼성전자 설립 이후 주요 연혁" |
-| GetCompanyBusinessSummary | 사업 요약 | "삼성전자 사업 내용 요약" |
-| GetCompanyRelatedFirms | 관계사 정보 | "삼성전자 자회사/관계사" |
-| GetCompanyDebts | 차입금 정보 | "삼성전자 차입금 현황" |
-| GetCompanyBranches | 사업장 정보 | "삼성전자 사업장 위치" |
-| GetConglomerateFinancialStatements | 그룹 재무제표 | "삼성그룹 전체 재무" |
-| GetAggregateIndustryInfo | 산업별 집계 | API 미작동 (NameError) |
-| GetMarketSummaryInfoByIndustry | 산업별 시장 요약 | API 미작동 (KeyError) |
-| SearchAnalystReports | 애널리스트 리포트 | "특정 애널리스트 리포트" |
-| FindPersonBio | 인물 경력 | "이재용 경력 조회" |
-| FindRichestShareholders | 주식 부자 | "보유주식 가치 상위 인물" |
+아래 함수는 이 레포의 API 키로 동작을 확인했습니다(2026-11-25). 호출 형식은 레포 `docs/reference/DEEPSEARCH_API_MASTER.md`(17절에 전체 함수표와 호출 결과)에 있습니다. 사용자가 요청하면 `query_api.py`로 바로 호출하세요.
+
+| 분야 | 함수 | 용도 |
+|---|---|---|
+| 기업 정보 | `GetCompanyHistory`, `GetCompanyBusinessSummary`, `GetCompanyRelatedFirms`, `GetCompanyDebts`, `GetCompanyBranches`, `GetCompanyProductsSales`, `GetFinancialStatementsAuditOpinion` | 연혁, 사업 요약, 관계사, 차입금, 사업장, 제품별 매출, 감사의견 |
+| 공시(DART 정기보고서) | `GetDartDividends`, `GetDartShareRepurchase`, `GetDartMajorityShareholders`, `GetDartMajorityShareholderChange`, `GetDartMinorityShareholders`, `GetDartExecutives`, `GetDartEmployees`, `GetDartIndividualDirectorCompensation`, `GetDartOverallDirectorCompensation`, `GetDartTopIndividualCompensation`, `GetDartInvestmentInOthers` | 배당, 자사주, 최대주주·변동, 소액주주, 임직원, 임원 보수, 타법인 출자 |
+| 컨센서스·이슈 | `GetConsensusInstitutionList`, `GetConsensusAnalystList(inst_code)`, `SearchFirmFundamentalsForecasts`, `GetTargetPriceConsensusChange`, `GetCompanyShareholderChanges` | 증권사·애널리스트, 실적 전망, 목표가 변화, 주주 변동 기업 |
+| 주가·지수 | `GetStockPrices`, `GetStockSymbols`, `GetMarketIndexes`, `GetMarketIndexSymbols` | 2020년 이전 주가, 지수 (규칙 3 수정주가 안내) |
+| 기업 주제·집단 | `GetEntityTags`, `FindEntityByTag`, `GetConditionalTagMetadata`, `FindConglomerateByID`, `GetConglomerateFinancialStatements` | 테마 태그, 그룹 재무 |
+| 인물 | `FindPersonBio(name, birthday)` | 인물 경력 |
+| 이벤트 | `ComputePortfolioReturns`, `ComputeEventDayStockReturns` | 포트폴리오 수익률, 이벤트일 종목 수익률 |
+| 경제지표 | 한국은행 `QueryBankOfKoreaSeries*`, FRED `QueryFredSeries*`, IMF `GetImf*`, OECD `GetOecd*`, World Bank `QueryWorldBank*`, 딥서치 자체 `QueryDeepSearchOwn*` (시리즈 검색 `FindEntity("DataSeries", "검색어")`) | 거시 지표. **기간을 꼭 지정**하세요(전체 시계열은 수 MB) |
+| 토픽 인사이트 (REST) | `query_api.py "/v1/topic-insight/insight?type=trending&section=economy&topicId={uid}&stream=false"` | 토픽 요약·질문. `topicId`는 `SearchTrendingTopics` 결과의 `uid` |
+
+**쓰지 마세요** (현재 구독으로 안 되거나 고장, 2026-11-25 확인):
+- 미제공(`NameError: UFunction ... is not defined`): 채권 함수 전부, 통계청(KOSIS) 전부, 채권 이벤트, `GetDartCapitalChange`, `GetFundamentalsConsensusChange`, `GetAggregateIndustryInfo`, `GetAggregateIndustryConsensus`, `SearchFinancialStatementsAuditOpinion`
+- 서버 오류·타임아웃: `GetMarketSummaryInfoByIndustry`·`GetIndustryReturnsOnEventDates`·`GetCumulativeIndustryReturns`(`KeyError: industry_id`), `AnalyzePortfolioReturns`(AttributeError), `FindPeopleByBirthday`·`FindRichestShareholders`·`ComputeStockReturnCorrelationWith`(타임아웃), `SearchAnalystReports`(500 → 애널리스트 보고서는 `DocumentSearch(["research"],["company"],...)`)
+- compute 밖 API: DeepSearch v2 REST(`api-v2.deepsearch.com`), 해외기업(`/v2/companies`), 챗딥서치(`/note/v1`) — 이 키로 401
 
 **fallback 응답:**
-> "이 요청은 현재 스킬의 범위 밖입니다. 하지만 DeepSearch API의 `{함수명}` 기능으로 처리할 수 있습니다.
-> - 관련 API 문서: docs/reference/DEEPSEARCH_API_MASTER.md
-> - 추가 스킬이 필요하시면 해당 기능을 포함하여 생성할 수 있습니다."
+> "이 요청은 현재 DeepSearch 구독으로 조회할 수 없습니다(`{함수명}`: {이유}). 대신 {대안}으로 확인할 수 있습니다."
+> 대안이 없으면 그렇다고 말하고, OpenDART 등 다른 출처를 제안하세요.
 
 ## Resources
 
-API 레퍼런스: [{baseDir}/references/api_quick_reference.md](references/api_quick_reference.md)
-검증된 사용 사례: [{baseDir}/references/verified_examples.md](references/verified_examples.md)
-KRX 업무 가이드: [{baseDir}/references/krx_monitoring_guide.md](references/krx_monitoring_guide.md)
-가치투자 방법론: [{baseDir}/references/value_investing.md](references/value_investing.md)
+API 레퍼런스: [references/api_quick_reference.md](references/api_quick_reference.md)
+검증된 사용 사례: [references/verified_examples.md](references/verified_examples.md)
+KRX 업무 가이드: [references/krx_monitoring_guide.md](references/krx_monitoring_guide.md)
+가치투자 방법론: [references/value_investing.md](references/value_investing.md)

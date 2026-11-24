@@ -3,13 +3,13 @@
 DeepSearch 문서 본문 읽기 스크립트
 
 사용법:
-    python read_document.py <API_KEY> <URL_OR_QUERY>
+    python read_document.py <URL_OR_QUERY> [--doc N]   # API 키는 .env / 환경변수에서
 
 모드 1 - URL 직접 지정:
-    python read_document.py "KEY" "https://ddi-cdn.deepsearch.com/.../report.pdf"
+    python read_document.py "https://ddi-cdn.deepsearch.com/.../report.pdf"
 
 모드 2 - 검색 후 본문 읽기 (검색쿼리 + 문서번호):
-    python read_document.py "KEY" 'DocumentSearch(["research"],["company"],"securities.name:삼성전자",count=5,page=1)' --doc 1
+    python read_document.py 'DocumentSearch(["research"],["company"],"securities.name:삼성전자",count=5,page=1)' --doc 1
 
 지원 형식:
     - PDF (애널리스트 보고서, IR자료, 공시) → PyMuPDF로 텍스트 추출
@@ -19,8 +19,10 @@ DeepSearch 문서 본문 읽기 스크립트
 """
 
 import sys
-import json
 import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _ds_common import emit, pop_api_key, setup_stdout  # noqa: E402
+import json
 import tempfile
 import re
 from urllib.parse import quote
@@ -150,31 +152,40 @@ def read_document(url):
         }
 
 
+def _emit_text(result, label):
+    """본문이 길면 전체를 파일로 저장하고 앞부분만 출력."""
+    preview = dict(result)
+    if isinstance(preview.get('text'), str) and len(preview['text']) > 4000:
+        preview['text'] = preview['text'][:4000] + ' …(이하 생략, 전체는 saved_to 파일)'
+    emit(result, preview, label=label)
+
+
 def main():
-    sys.stdout.reconfigure(encoding='utf-8')
-
-    if len(sys.argv) < 3:
-        print(json.dumps({
-            'success': False,
-            'error': 'Usage: python read_document.py <API_KEY> <URL_OR_QUERY> [--doc N]'
-        }, ensure_ascii=False, indent=2))
-        sys.exit(1)
-
-    api_key = sys.argv[1]
-    target = sys.argv[2]
+    setup_stdout()
+    api_key, args = pop_api_key(sys.argv[1:])
 
     # --doc 옵션 파싱
     doc_index = 0
-    if '--doc' in sys.argv:
-        idx = sys.argv.index('--doc')
-        if idx + 1 < len(sys.argv):
-            doc_index = int(sys.argv[idx + 1]) - 1  # 1-based → 0-based
+    if '--doc' in args:
+        idx = args.index('--doc')
+        if idx + 1 < len(args):
+            doc_index = int(args[idx + 1]) - 1  # 1-based → 0-based
+        del args[idx:idx + 2]
+
+    if len(args) < 1:
+        print(json.dumps({
+            'success': False,
+            'error': 'Usage: python read_document.py <URL_OR_QUERY> [--doc N]'
+        }, ensure_ascii=False, indent=2))
+        sys.exit(1)
+
+    target = args[0]
 
     try:
         if target.startswith('http://') or target.startswith('https://'):
             # 모드 1: URL 직접 지정
             result = read_document(target)
-            print(json.dumps(result, ensure_ascii=False, indent=2))
+            _emit_text(result, target)
         else:
             # 모드 2: 검색 후 읽기
             doc, error = search_and_get_url(api_key, target, doc_index)
@@ -201,7 +212,7 @@ def main():
 
             result = read_document(content_url)
             result['meta'] = meta
-            print(json.dumps(result, ensure_ascii=False, indent=2))
+            _emit_text(result, meta.get('title') or content_url)
 
     except Exception as e:
         print(json.dumps({

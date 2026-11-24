@@ -7,12 +7,13 @@
 
 $ARGUMENTS
 
-## API 키
+## 먼저 읽기
 
-`.env` 파일에서 `API_KEY`를 읽어 사용하세요:
-```bash
-source .env && echo $API_KEY
-```
+- 이 커맨드는 `skills/deepsearch/SKILL.md`의 요약입니다. 규칙이 다르면 SKILL.md가 맞습니다.
+- **API 키:** 스크립트가 환경변수 `DEEPSEARCH_API_KEY`/`API_KEY` 또는 레포 루트 `.env`에서 직접 읽습니다. 키를 명령에 넣거나 `.env`를 출력하지 마세요. 없으면 사용자에게 한 번만 요청해 `.env`에 `API_KEY=<키>`로 저장하세요.
+- **실행:** `python skills/deepsearch/scripts/query_api.py "쿼리"` (옵션: `--out 파일`, `--max-pages N`, `--grep 정규식`)
+- **큰 결과:** 2만 자가 넘으면 임시 파일로 저장되고 `saved_to`와 미리보기만 출력됩니다. 그 파일을 Python으로 읽어 필요한 부분만 쓰세요.
+- **쓸 수 있는 함수:** `docs/reference/DEEPSEARCH_API_MASTER.md` 17절(호출 결과 표). 채권·통계청 함수, v2 REST, 해외기업, 챗딥서치는 현재 구독으로 쓸 수 없습니다.
 
 ## 쿼리 라우팅
 
@@ -40,14 +41,14 @@ SimilarKeywords("반도체",max_count=5)
 
 **카테고리:** `["news"]`, `["research"]`, `["company"]`, `["patent"]`
 **필드:** `securities.name:`, `securities.market:`, `polarity.name:`, `esg.category.name:`, `title:`, `publisher.raw:`
-**제한:** DocumentSearch 최대 1년, 초과 시 6개월 분할
+**제한:** DocumentSearch 기간 최대 1년(초과 시 HTTP 413). `query_api.py`가 1년 단위로 자동 분할·중복 제거합니다.
 
 **KRX 패턴:**
 - 조회공시 → `title:(인수 or 합병 or 매각) and securities.market:(KOSPI or KOSDAQ)`
 - 부정 뉴스 → `securities.market:KOSPI and polarity.name:부정`
 - ESG 이슈 → `esg.category.name:지배구조 and esg.polarity.name:부정`
 
-**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "쿼리"`
 
 ---
 
@@ -66,7 +67,10 @@ GetFinancialStatements(삼성전자, consolidated=False)       # 별도 재무�
 GetFinancialStatements(삼성전자, report_ids="BalanceSheet") # 특정 제표만
 ```
 **❌ 금지:** `삼성전자 매출액 2020-2024`, `기업명 영업이익 2020-2024` (KeyError 발생)
-**❌ 기업명에 따옴표 금지:** `GetFinancialStatements("삼성전자")` → 403 오류
+- 기업명은 따옴표 없이 씁니다.
+- **계정명(`name_ko`):** 매출액 = `수익`, 영업이익 = `영업이익(손실)`, 당기순이익 = `총당기순이익`, `자산총계`·`부채총계`·`자본총계`. 필요한 계정만 거르세요:
+  `python skills/deepsearch/scripts/query_api.py 'GetFinancialStatements(삼성전자, consolidated=True, date_from=2020-01-01, date_to=2024-12-31)' --grep '^(수익|영업이익\(손실\)|총당기순이익)$'`
+- 과거 연도 값은 원래값·재작성값이 섞여 있고, 시장데이터 BPS·EPS에는 look-ahead가 있습니다(SKILL.md 규칙 4).
 
 ### 주가/시장 데이터 → 자연어 쿼리 OK
 ```
@@ -87,13 +91,15 @@ FindEntity("Financial","삼성*")
 GetCompanySummary("삼성전자")
 GetCompanyDividends("삼성전자",date_from=20200101,date_to=20241231)
 SearchTargetPrices("005930",date_from=20240101,date_to=20241231)
+GetDartDividends(KRX:005930, date_from=2020-01-01, date_to=2024-12-31)
+GetDartMajorityShareholders(KRX:005930, date_from=2024-01-01, date_to=2024-12-31)
 FindConglomerateByName("삼성")
 FindPeopleByName("이재용")
 ```
 
 **기업 검색:** `"반도체" 관련 기업`, `"건강기능식품" 산업 기업`, `상장 기업`, `"국민연금" 주주 기업`
 
-**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "쿼리"`
 
 ---
 
@@ -115,12 +121,12 @@ FindPeopleByName("이재용")
 
 **전용 스크립트:**
 ```bash
-python skills/deepsearch/scripts/turnaround_screener.py "$API_KEY" loss 5000
-python skills/deepsearch/scripts/turnaround_screener.py "$API_KEY" profit 1000
-python skills/deepsearch/scripts/market_top_movers.py "$API_KEY" kosdaq 150 2025-02-27
+python skills/deepsearch/scripts/turnaround_screener.py loss 5000
+python skills/deepsearch/scripts/turnaround_screener.py profit 1000
+python skills/deepsearch/scripts/market_top_movers.py kosdaq 150 2025-02-27
 ```
 
-**실행:** `python skills/deepsearch/scripts/query_api.py "$API_KEY" "쿼리"`
+**실행:** `python skills/deepsearch/scripts/query_api.py "쿼리"`
 
 ---
 

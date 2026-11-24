@@ -186,13 +186,13 @@ Top(매출액, 10)
 
 ## 사례 35: 적자전환 스크리닝
 ```bash
-python scripts/turnaround_screener.py "API_KEY" loss 5000
+python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py loss 5000
 ```
 → 32개 적자전환 (현대건설, 한화솔루션, 에코프로비엠, 엔씨소프트 등)
 
 ## 사례 36: 흑자전환 스크리닝
 ```bash
-python scripts/turnaround_screener.py "API_KEY" profit 1000
+python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000
 ```
 → SK바이오팜, SK스퀘어, 이마트, 금호석유 등
 
@@ -222,7 +222,7 @@ python scripts/turnaround_screener.py "API_KEY" profit 1000
 
 ## 사례 41: 코스닥 시가총액 상위 150개 등락률 (전용 스크립트)
 ```bash
-python scripts/market_top_movers.py "API_KEY" kosdaq 150 2025-02-27
+python ${CLAUDE_SKILL_DIR}/scripts/market_top_movers.py kosdaq 150 2025-02-27
 ```
 → 시가총액 상위 150개 중 최다 하락/상승 10개씩 출력
 → 내부: 전체 종목 조회 → 병렬 시가총액 수집 → 정렬
@@ -411,7 +411,7 @@ DocumentSearch(["news"],[],"title:(시세조종 or 불공정거래 or 내부자�
 
 ## 사례 61: 일일 시황분석 리포트 생성
 ```bash
-python {baseDir}/scripts/market_overview.py "API_KEY" 2026-02-27
+python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py 2026-02-27
 ```
 → 7/7 섹션 성공 (28초)
 - 시장 지수: KOSPI 6,244.13 (-1.00%), KOSDAQ 1,192.78 (+0.39%), KOSPI200 933.34 (-1.13%)
@@ -424,7 +424,7 @@ python {baseDir}/scripts/market_overview.py "API_KEY" 2026-02-27
 
 ## 사례 62: 주말 날짜 시황분석 (비거래일 처리)
 ```bash
-python {baseDir}/scripts/market_overview.py "API_KEY" 2026-02-22
+python ${CLAUDE_SKILL_DIR}/scripts/market_overview.py 2026-02-22
 ```
 → 7/7 섹션 성공
 - 시장 데이터: 직전 거래일(2026-02-20 금요일) 기준으로 자동 조회

@@ -3,15 +3,15 @@
 적자전환/흑자전환 기업 스크리너
 
 사용법:
-    python turnaround_screener.py <API_KEY> <방향> [매출기준(억)]
+    python turnaround_screener.py <방향> [매출기준(억)]   # API 키는 .env / 환경변수에서
 
     방향: loss (적자전환) 또는 profit (흑자전환)
     매출기준: 최소 매출액 (억 단위, 기본값 1000 = 1000억)
 
 예시:
-    python turnaround_screener.py "KEY" loss           → 매출 1000억+ 적자전환 기업
-    python turnaround_screener.py "KEY" profit          → 매출 1000억+ 흑자전환 기업
-    python turnaround_screener.py "KEY" loss 5000       → 매출 5000억+ 적자전환 기업
+    python turnaround_screener.py loss           → 매출 1000억+ 적자전환 기업
+    python turnaround_screener.py profit          → 매출 1000억+ 흑자전환 기업
+    python turnaround_screener.py loss 5000       → 매출 5000억+ 적자전환 기업
 
 원리:
     1단계: 현재 영업이익 < 0 (또는 > 0) 상장기업 스크리닝
@@ -22,6 +22,9 @@
 """
 
 import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _ds_common import pop_api_key, setup_stdout  # noqa: E402
 import json
 import time
 
@@ -139,16 +142,17 @@ def format_value(v):
 
 
 def main():
-    if len(sys.argv) < 3:
+    setup_stdout()
+    api_key, args = pop_api_key(sys.argv[1:])
+    if len(args) < 1:
         print(json.dumps({
             'success': False,
-            'error': 'Usage: python turnaround_screener.py <API_KEY> <loss|profit> [min_revenue_억]'
+            'error': 'Usage: python turnaround_screener.py <loss|profit> [min_revenue_억]'
         }, ensure_ascii=False, indent=2))
         sys.exit(1)
 
-    api_key = sys.argv[1]
-    direction = sys.argv[2].lower()
-    min_revenue_eok = int(sys.argv[3]) if len(sys.argv) > 3 else 1000
+    direction = args[0].lower()
+    min_revenue_eok = int(args[1]) if len(args) > 1 else 1000
     min_revenue = min_revenue_eok * 100000000  # 억 → 원
 
     if direction not in ('loss', 'profit'):

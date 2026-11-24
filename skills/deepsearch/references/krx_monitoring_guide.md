@@ -201,7 +201,7 @@ DocumentSearch(["news"],[],"title:(시세조종 or 불공정거래 or 내부자�
 
 **결과:** 823건 (최근 6개월)
 
-**주의:** 기간이 1년을 초과하면 오류 발생. 6개월 단위로 조회 권장.
+**주의:** DocumentSearch 기간이 1년을 넘으면 HTTP 413(`RequestEntityTooLarge`). `query_api.py`로 호출하면 1년 단위로 자동 분할합니다.
 
 ---
 

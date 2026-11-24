@@ -6,7 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KRX (Korea Exchange) listed company document search tool using the DeepSearch API. Searches news, research reports, disclosures/IR, and patents, then filters results to identify mentions of KRX-listed companies (KOSPI, KOSDAQ, KONEX).
 
-The repo also holds the DeepSearch Claude skill (`skills/deepsearch/`), used via Claude Code (clone the repo or copy the folder into `.claude/skills/`; no zip distribution).
+The repo also holds the DeepSearch Claude skill (`skills/deepsearch/`), used via Claude Code (clone the repo or copy the folder into `.claude/skills/`; no zip distribution), and the DeepSearch API reference (`docs/reference/`).
+
+**Status (2026-11):** Supabase is no longer used. The `ds_entitysummary` DB pipeline (`deepsearch_query_api.py`) and its daily GitHub Actions workflow are retired; the sections below about the DB, Actions and Streamlit secrets describe the old setup. The DeepSearch API key itself is valid. Active work is in `skills/deepsearch/`, `docs/reference/` and `research/`.
+
+**To use DeepSearch data:** read `skills/deepsearch/SKILL.md` first, call `python skills/deepsearch/scripts/query_api.py "쿼리"` (reads `API_KEY` from `.env`; never echo the key), and check `docs/reference/DEEPSEARCH_API_MASTER.md` §17 for which functions work with this subscription.
 
 ## Project Structure
 
@@ -22,7 +26,7 @@ deepsearch/
 │   └── deepsearch/         # 통합 스킬 소스 (유일한 스킬)
 ├── docs/
 │   ├── api_guide.html      # GitHub Pages (위치 고정)
-│   └── reference/          # DeepSearch API 레퍼런스 md
+│   └── reference/          # DeepSearch API 레퍼런스 (README.md 색인, MASTER 요약, GitBook 원문, sync_from_gitbook.py)
 ├── research/               # DeepSearch 데이터 검증 노트 (README.md 색인, 주제별 폴더)
 │   ├── restatement/        # 재무제표 과거값: 원래값 vs 재작성값 (OpenDART 대조)
 │   ├── pbr_bps/            # 시장데이터 PBR/BPS 정의
@@ -36,6 +40,8 @@ deepsearch/
 
 - Source of truth: `skills/deepsearch/`. No build step (zip distribution was removed 2026-11-25).
 - `.claude/commands/deepsearch.md` is a condensed copy of the skill for Claude Code in this repo; keep its paths pointing at `skills/deepsearch/`.
+- Scripts share `skills/deepsearch/scripts/_ds_common.py`: API key lookup (env `DEEPSEARCH_API_KEY`/`API_KEY` → `.env` in cwd/parents → skill-dir parents; a key as the first CLI arg still works), compute via POST, `data.exceptions` surfaced as errors with hints, and large results (>20k chars) saved to a temp JSON file with only a preview printed.
+- In SKILL.md, `${CLAUDE_SKILL_DIR}` means the skill folder (`skills/deepsearch` when reading the repo directly).
 
 ## Architecture (newsscrap)
 
@@ -123,13 +129,13 @@ pip install -r requirements.txt
 
 ## DeepSearch API Documentation
 
-**API 문서 위치:** `docs/reference/` 폴더 내 마크다운 파일들
-- `DEEPSEARCH_API_MASTER.md` - API 종합 가이드
-- `3_API함수를_통한_데이터_조회_문서검색.md` - DocumentSearch, DocumentTrends, DocumentAggregation 등
-- `3_API함수를_통한_데이터_조회_국내기업.md` - FindEntity, GetEntitySummary 등
-- `2_쿼리를_통한_데이터_조회.md` - 쿼리 문법
+**API 문서 위치:** `docs/reference/` (색인: `docs/reference/README.md`)
+- `DEEPSEARCH_API_MASTER.md` - API 종합 가이드 + §17 전체 함수 목록과 이 구독 키로의 호출 결과(✅/⚠️/❌)
+- `1_기본적인_데이터_조회방법.md` ~ `5_결과레이아웃.md` - 공식 가이드(https://help.deepsearch.com/dp) 원문. 함수 그룹별 파일(국내기업, 채권, 산업, 인물, 문서, 이벤트, 경제지표, 토픽인사이트)
+- 원문은 `python docs/reference/sync_from_gitbook.py`로 다시 생성합니다. 레포 메모는 `<!-- repo-memo:start -->`~`<!-- repo-memo:end -->` 안에만 쓰세요(그 밖은 덮어씀).
+- 현재 구독으로 안 되는 것: v2 REST(`api-v2.deepsearch.com`, 401), 해외기업(`/v2/companies`, 401), 챗딥서치(`/note/v1`, 401), 채권·통계청 등 일부 compute 함수(`NameError`). 원문에 넣지 않았거나 페이지에 메모를 붙였습니다.
 
-Base URL: `https://api.deepsearch.com/v1/compute?input=`
+Base URL: `https://api.deepsearch.com/v1/compute?input=` (공식 가이드는 `https://app-api.deepsearch.com` 안내 — 둘 다 동작. POST `{"input": "..."}`도 지원)
 
 ### 주요 API 함수
 - `DocumentSearch(categories, subcategories, "search_query", count=100, page=N)` - 문서 검색

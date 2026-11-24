@@ -2,10 +2,11 @@
 """DeepSearch 일일 시황분석 (Daily Market Overview)
 
 사용법:
-    python market_overview.py <API_KEY> <DATE>
+    python market_overview.py <DATE>            # API 키는 .env / 환경변수에서
+    python market_overview.py <API_KEY> <DATE>  # 구 방식
 
 예시:
-    python market_overview.py "KEY" 2026-02-27
+    python market_overview.py 2026-02-27
 
 출력: JSON - 7개 섹션의 종합 시황 리포트
   1. 시장 지수 (KOSPI/KOSDAQ/대형/중형/소형주)
@@ -20,6 +21,9 @@
 """
 
 import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _ds_common import pop_api_key, setup_stdout  # noqa: E402
 import json
 import time
 import base64
@@ -577,16 +581,17 @@ def build_report(api_key, date_str):
 
 
 def main():
-    if len(sys.argv) < 3:
+    setup_stdout()
+    api_key, args = pop_api_key(sys.argv[1:])
+    if len(args) < 1:
         print(json.dumps({
             'success': False,
-            'error': 'Usage: python market_overview.py <API_KEY> <DATE>',
-            'example': 'python market_overview.py "KEY" 2026-02-27'
+            'error': 'Usage: python market_overview.py <DATE>',
+            'example': 'python market_overview.py 2026-02-27'
         }, ensure_ascii=False, indent=2))
         sys.exit(1)
 
-    api_key = sys.argv[1]
-    date_str = sys.argv[2]
+    date_str = args[0]
 
     # 날짜 형식 검증
     try:

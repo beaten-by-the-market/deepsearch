@@ -2,16 +2,19 @@
 """코스닥/코스피 시가총액 상위 N개 종목의 등락률 조회
 
 사용법:
-    python market_top_movers.py <API_KEY> <market> <top_n> <date>
+    python market_top_movers.py <market> <top_n> <date>   # API 키는 .env / 환경변수에서
 
 예시:
-    python market_top_movers.py "KEY" kosdaq 150 2025-02-27
-    python market_top_movers.py "KEY" kospi 100 2025-02-27
+    python market_top_movers.py kosdaq 150 2025-02-27
+    python market_top_movers.py kospi 100 2025-02-27
 
 출력: JSON (시가총액 상위 N개 중 하락률 기준 정렬)
 """
 
 import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _ds_common import pop_api_key, setup_stdout  # noqa: E402
 import json
 import time
 import re
@@ -136,18 +139,19 @@ def get_stock_data(api_key, name, date_str):
 
 
 def main():
-    if len(sys.argv) < 5:
+    setup_stdout()
+    api_key, args = pop_api_key(sys.argv[1:])
+    if len(args) < 3:
         print(json.dumps({
             'success': False,
-            'error': 'Usage: python market_top_movers.py <API_KEY> <kosdaq|kospi> <top_n> <date>',
-            'example': 'python market_top_movers.py "KEY" kosdaq 150 2025-02-27'
+            'error': 'Usage: python market_top_movers.py <kosdaq|kospi> <top_n> <date>',
+            'example': 'python market_top_movers.py kosdaq 150 2025-02-27'
         }, ensure_ascii=False, indent=2))
         sys.exit(1)
 
-    api_key = sys.argv[1]
-    market = sys.argv[2]
-    top_n = int(sys.argv[3])
-    target_date = sys.argv[4]
+    market = args[0]
+    top_n = int(args[1])
+    target_date = args[2]
 
     print(f'[1/3] {market.upper()} 상장 기업 목록 조회 중...', file=sys.stderr)
     companies = get_listed_companies(api_key, market)

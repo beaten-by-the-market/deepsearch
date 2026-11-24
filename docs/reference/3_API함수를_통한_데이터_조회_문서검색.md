@@ -1,4 +1,64 @@
+<!-- 이 파일은 docs/reference/sync_from_gitbook.py로 생성합니다 (2026-11-25). 원문: https://help.deepsearch.com/dp/ — DocumentSearch·Trends·Aggregation, 감성, 토픽, 유사어. 직접 고치지 말고, 레포 메모는 repo-memo 마커 안에 쓰세요. -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document -->
+# 문서
+
+## 문서 검색&#x20;
+
+```
+DocumentSearch
+DocumentTrends
+DocumentAggregation
+```
+
+{% content-ref url="/pages/-M1yVCknhkT8BjcDa\_vj" %}
+[문서 검색](https://help.deepsearch.com/dp/api/func/document/document-search.md)
+{% endcontent-ref %}
+
+## 토픽 검색
+
+```
+SearchTrendingTopics
+GetTrendingTopic
+SearchHistoricalTopics
+GetHistoricalTopic
+```
+
+{% content-ref url="/pages/-MDr1Vod\_7JFiLU9QviI" %}
+[토픽 검색](https://help.deepsearch.com/dp/api/func/document/topic-search.md)
+{% endcontent-ref %}
+
+## 유사 단어 추출
+
+```
+SimilarKeywords
+```
+
+{% content-ref url="/pages/-M1yWYpUbdjP0XuwP3hc" %}
+[유사 단어 추출](https://help.deepsearch.com/dp/api/func/document/similar-analysis.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search -->
+# 문서 검색
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-M27xV\_OmeuQ7KIxkdlr" %}
+[DocumentSearch](https://help.deepsearch.com/dp/api/func/document/document-search/documentsearch.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27xUBCnaHGVhv1jq8e" %}
+[DocumentTrends](https://help.deepsearch.com/dp/api/func/document/document-search/documenttrends.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-ME2wJA\_OvKkEiJMWe5B" %}
+[DocumentAggregation](https://help.deepsearch.com/dp/api/func/document/document-search/documentaggregation.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search/documentsearch -->
 # DocumentSearch
+
+뉴스, 공시, IR, 증권사 보고서, 특허 문서를 검색합니다.
 
 ### Function specification
 
@@ -34,8 +94,8 @@ DocumentSearch(category, section, query, count=10, page=None,
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-documentsearchresult" %}
-[result-documentsearchresult](https://help.deepsearch.com/dp/api/result_layout/result-documentsearchresult)
+{% content-ref url="/pages/-MX0oQ9HEhTCvwdUPp\_a" %}
+[Result:DocumentSearchResult](https://help.deepsearch.com/dp/api/result_layout/result-documentsearchresult.md)
 {% endcontent-ref %}
 
 ### 검색 쿼리 예시 - 국내 뉴스
@@ -140,14 +200,43 @@ updated_at: "2020-03-26T13:55:00.000000"
 >>> DocumentSearch("news","economy","한국은행",clustering=true,count=30, sample_size=50)
 ```
 
+<!-- repo-memo:start -->
+## ⚠️ 실전 함정 (레포 검증 메모 — 공식 문서 아님)
+
+> 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../../notes/HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스 조회 중 검증. 2026-11-25 재확인.
+> 자동 처리 클라이언트: [`skills/deepsearch/scripts/query_api.py`](../../skills/deepsearch/scripts/query_api.py) (1년 자동 분할·exceptions 표시·큰 결과 파일 저장), [`newsscrap/ds_client.py`](../../newsscrap/ds_client.py) (Python 모듈).
+
+| # | 함정 | 증상 | 해결 |
+|---|------|------|------|
+| 1 | **검색 기간 1년 한도** | 1년 초과 시 **HTTP 413** + `RequestEntityTooLarge: Not allowed to search more than 1 year if not logged in`. 상태코드만 보면 "URL이 너무 길다"로 오해하기 쉽고, fields·OR 괄호를 의심하게 됨(둘 다 무죄) | Basic 인증은 **≤1년**만 허용. 초과분은 **≤1년 구간으로 분할** 후 `content_url` 기준 중복 제거·병합. DocumentTrends는 2년 범위도 정상 |
+| 2 | **에러 원인은 `data.exceptions`** | HTTP 200이어도 오고, 413 같은 4xx 본문에도 들어 있음 | 결과가 비거나 4xx면 **응답 본문의 `data["exceptions"]`부터 확인** |
+| 3 | **문서 리스트 키는 `docs`** | `data["documents"]` 조회 → 항상 0건 오인 | 정답 경로: `data["pods"][1]["content"]["data"]["docs"]` (NOT `documents`) |
+| 4 | **URL 인코딩 / CP949** | 한글·괄호가 깨지거나 `&`가 파라미터 구분자로 오인됨 | `urllib.parse.quote(query, safe="")` 필수(또는 POST로 `input` 전달). Windows 콘솔은 CP949라 한글 깨짐 → **결과를 UTF-8 파일로 덤프**해 확인 |
+
+**1년 경계 검증 로그** (`유한양행 and 배당`, 2023 통제):
+
+```
+plain  20230101-20231231 : OK total=29 docs=2
++fields                  : OK total=29 docs=2     # fields 무죄
+OR(배당 or 무상증자)       : OK total=35 docs=3     # OR 무죄(합집합 정상)
+→20240102 (366d)         : OK
+→20240401 (15m)          : FAIL  RequestEntityTooLarge
+→20240701 (18m)          : FAIL
+→20250101 (24m)          : FAIL
+```
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search/documentsearch/undefined -->
 # 문서 심화검색
+
+딥서치 문서데이터를 보다 정교하게 검색할 수 있는 방법에 대해서 기술합니다.
 
 ## Field Names <a href="#field-names" id="field-names"></a>
 
 입력한 쿼리의 검색 대상은 기본적으로 문서의 제목과 본문이지만, 다음과 같이 특정한 필드를 지정하는 것도 가능합니다. 딥서치의 문서데이터 구조는 아래와 같습니다.&#x20;
 
-{% content-ref url="../../../../result\_layout/result-documentsearchresult" %}
-[result-documentsearchresult](https://help.deepsearch.com/dp/api/result_layout/result-documentsearchresult)
+{% content-ref url="/pages/-MX0oQ9HEhTCvwdUPp\_a" %}
+[Result:DocumentSearchResult](https://help.deepsearch.com/dp/api/result_layout/result-documentsearchresult.md)
 {% endcontent-ref %}
 
 | 항목         | 내용     | type        | 비고                                                                                                                                                                                                                                                                                                           |
@@ -364,7 +453,7 @@ title:(삼성전자 (갤럭시 or 아이폰) !소송)
 
 ## 날짜 + 시간단위로 문서를 조회하는 방법 <a href="#named-search-query" id="named-search-query"></a>
 
-정식으로 지원하는 date\_*from, date\_to 파라미터는 연월일만 조회할 수 있을 뿐, 시간단위로는 조회할 수 없는 단점이있습니다. 아래 기능을 이용하시면, 연월일 뿐만아니라 시간까지 넣어서 조회할 수 있습니다.*
+정식으로 지원하는 date\_*from, date\_to 파라미터는 연월일만 조회할 수 있을 뿐, 시간단위로는 조회할 수 없는 단점이있습니다. 아래 기능을 이용하시면, 연월일 뿐만아니라 시간까지 넣어서 조회할 수 있습니다.*
 
 ```
 // date_from, date_to를 사용하지않고, created_at을 사용합니다.
@@ -372,7 +461,10 @@ title:(삼성전자 (갤럭시 or 아이폰) !소송)
 DocumentSearch(["news"], [], "삼성전자 and created_at:[\"2022-07-12T00:00:00\" to \"2022-07-12T09:00:00\"]", page=1, count=10, highlight=True)
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search/documenttrends -->
 # DocumentTrends
+
+문서를 기반으로 특정 주제의 트렌드 추이를 조회합니다.
 
 ### Function specification
 
@@ -398,8 +490,8 @@ DocumentTrends(category, section, query,
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-documenttrendsresult" %}
-[result-documenttrendsresult](https://help.deepsearch.com/dp/api/result_layout/result-documenttrendsresult)
+{% content-ref url="/pages/-MX0w\_s-dnB6cJcyOJ9c" %}
+[Result:DocumentTrendsResult](https://help.deepsearch.com/dp/api/result_layout/result-documenttrendsresult.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -486,7 +578,10 @@ count: 1794,
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search/documentaggregation -->
 # DocumentAggregation
+
+문서를 기반으로 다양한 조건으로 집계하여 처리한다.
 
 ### Function specification
 
@@ -511,8 +606,8 @@ date_from=None, date_to=None, min_count=0)
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-dataframe" %}
-[result-dataframe](https://help.deepsearch.com/dp/api/result_layout/result-dataframe)
+{% content-ref url="/pages/-MX0pL3fxcn\_vXTLDQhb" %}
+[Result:DataFrame](https://help.deepsearch.com/dp/api/result_layout/result-dataframe.md)
 {% endcontent-ref %}
 
 ### 활용 예시
@@ -661,7 +756,10 @@ key: [
 ]
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/document-search/getsentimentscore -->
 # GetSentimentScore
+
+문서의 긍부정점수를 조회합니다.
 
 ### Parameters
 
@@ -674,8 +772,8 @@ key: [
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-documenttrendsresult" %}
-[result-documenttrendsresult](https://help.deepsearch.com/dp/api/result_layout/result-documenttrendsresult)
+{% content-ref url="/pages/-MX0w\_s-dnB6cJcyOJ9c" %}
+[Result:DocumentTrendsResult](https://help.deepsearch.com/dp/api/result_layout/result-documenttrendsresult.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -687,7 +785,31 @@ key: [
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/topic-search -->
+# 토픽 검색
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-ME6sGMooPQHZTh3YPgx" %}
+[SearchTrendingTopics](https://help.deepsearch.com/dp/api/func/document/topic-search/searchtrendingtopics.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-ME6uSye1hf8G0ZcusVL" %}
+[GetTrendingTopic](https://help.deepsearch.com/dp/api/func/document/topic-search/gettrendingtopic.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-MDr-YJDiX6Fy8J7nhU2" %}
+[SearchHistoricalTopics](https://help.deepsearch.com/dp/api/func/document/topic-search/searchhistoricaltopics.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-ME6kRUElvmWJ2U7HCXo" %}
+[GetHistoricalTopic](https://help.deepsearch.com/dp/api/func/document/topic-search/gethistoricaltopic.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/topic-search/searchtrendingtopics -->
 # SearchTrendingTopics
+
+현재 시장에서 벌어지고 있는 주요 이슈를 추출하여 제공합니다.
 
 ### Function specification
 
@@ -707,8 +829,8 @@ SearchTrendingTopics(category, section, fields=None)
 
 ### Result Layout&#x20;
 
-{% content-ref url="../../../result\_layout/result-trendingtopicssearchresult" %}
-[result-trendingtopicssearchresult](https://help.deepsearch.com/dp/api/result_layout/result-trendingtopicssearchresult)
+{% content-ref url="/pages/-MX1GkD\_miwdr67HjiWD" %}
+[Result:TrendingTopicsSearchResult](https://help.deepsearch.com/dp/api/result_layout/result-trendingtopicssearchresult.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -832,7 +954,12 @@ SearchTrendingTopics(category, section, fields=None)
 
 ...
 
-```# GetTrendingTopic
+```
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/topic-search/gettrendingtopic -->
+# GetTrendingTopic
+
+현재 시장에서 벌어지고 있는 주요 이슈에 대한 문서를 가져옵니다.
 
 ### Function specification
 
@@ -859,8 +986,8 @@ GetTrendingTopic(
 
 ### Result Layout&#x20;
 
-{% content-ref url="../../../result\_layout/result-trendingtopicresult" %}
-[result-trendingtopicresult](https://help.deepsearch.com/dp/api/result_layout/result-trendingtopicresult)
+{% content-ref url="/pages/-MX1ICtAAPHftFxv-30G" %}
+[Result:TrendingTopicResult](https://help.deepsearch.com/dp/api/result_layout/result-trendingtopicresult.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -1064,7 +1191,10 @@ GetTrendingTopic(
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/topic-search/searchhistoricaltopics -->
 # SearchHistoricalTopics
+
+과거의 주요 주제를 조회합니다.
 
 ### Function specification
 
@@ -1093,8 +1223,8 @@ SearchHistoricalTopics(
 
 ### Result Layout&#x20;
 
-{% content-ref url="../../../result\_layout/result-historicaltopicssearchresult" %}
-[result-historicaltopicssearchresult](https://help.deepsearch.com/dp/api/result_layout/result-historicaltopicssearchresult)
+{% content-ref url="/pages/-MX1SD-PXu5TZL0XeqMz" %}
+[Result:HistoricalTopicsSearchResult(검색)](https://help.deepsearch.com/dp/api/result_layout/result-historicaltopicssearchresult.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -1230,7 +1360,10 @@ SearchHistoricalTopics(
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/topic-search/gethistoricaltopic -->
 # GetHistoricalTopic
+
+과거의 주요 주제에 대한 문서를 가져옵니다.
 
 ### Function specification
 
@@ -1259,8 +1392,8 @@ GetHistoricalTopic(
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-historicaltopicssearchresult-1" %}
-[result-historicaltopicssearchresult-1](https://help.deepsearch.com/dp/api/result_layout/result-historicaltopicssearchresult-1)
+{% content-ref url="/pages/-MX1U2TB4DMbQCdLjlE4" %}
+[Result:HistoricalTopicsSearchResult(상세)](https://help.deepsearch.com/dp/api/result_layout/result-historicaltopicssearchresult-1.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -1443,7 +1576,19 @@ GetHistoricalTopic(
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/document/similar-analysis -->
+# 유사 단어 추출
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-M27xXOdd1IvBcRN5l8V" %}
+[SimilarKeywords](https://help.deepsearch.com/dp/api/func/document/similar-analysis/similarkeywords.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/document/similar-analysis/similarkeywords -->
 # SimilarKeywords
+
+입력된 쿼리와 유사한 키워드를 검색합니다.
 
 ### Function specification
 
@@ -1478,8 +1623,8 @@ Word2Vec 모델은 연도별로  발생한 뉴스 데이터를 기반으로 각�
 
 ### Result Layout
 
-{% content-ref url="../../../result\_layout/result-dataframe" %}
-[result-dataframe](https://help.deepsearch.com/dp/api/result_layout/result-dataframe)
+{% content-ref url="/pages/-MX0pL3fxcn\_vXTLDQhb" %}
+[Result:DataFrame](https://help.deepsearch.com/dp/api/result_layout/result-dataframe.md)
 {% endcontent-ref %}
 
 ### Examples
@@ -1521,40 +1666,4 @@ year index
      7         신기술  0.6245
      8          실증  0.6166
      9       커넥티드카  0.6121
-```
-
----
-
-## ⚠️ 실전 함정 (DocumentSearch 사용 시 반드시 확인)
-
-> 출처: [`HANDOFF_DocumentSearch_news_20260610.md`](../../notes/HANDOFF_DocumentSearch_news_20260610.md) — KRX 상장사 뉴스
-> 조회 중 검증된 동작 규칙. 같은 시행착오를 반복하지 않기 위해 정리한다.
-> 정식 클라이언트: [`newsscrap/ds_client.py`](../../newsscrap/ds_client.py) (1년 자동분할·exceptions 처리 내장).
-
-| # | 함정 | 증상 | 해결 |
-|---|------|------|------|
-| 1 | **검색 기간 1년 한도** | 1년 초과 시 결과가 **통째로 0건**. fields·OR 괄호를 엉뚱하게 의심하게 됨(둘 다 무죄) | 비로그인(`Authorization: Basic`)은 **≤1년**만 허용. 초과분은 **≤1년 청크로 분할** 후 `content_url` 기준 dedup·병합 |
-| 2 | **`data.exceptions` 먼저 보기** | 에러가 **HTTP 200**으로 와서 status code로는 안 보임 | 결과가 비면 **가장 먼저 `data["exceptions"]` 확인**. 1년 초과는 `RequestEntityTooLarge: "Not allowed to search more than 1 year if not logged in"` |
-| 3 | **문서 리스트 키는 `docs`** | `data["documents"]` 조회 → 항상 0건 오인 | 정답 경로: `data["pods"][1]["content"]["data"]["docs"]` (NOT `documents`) |
-| 4 | **URL 인코딩 / CP949** | 한글·괄호가 깨지거나 `&`가 파라미터 구분자로 오인됨 | `urllib.parse.quote` 필수. Windows 콘솔은 CP949라 한글 깨짐 → **결과를 UTF-8 파일로 덤프**해 확인 |
-
-**1년 경계 검증 로그** (`유한양행 and 배당`, 2023 통제):
-
-```
-plain  20230101-20231231 : OK total=29 docs=2
-+fields                  : OK total=29 docs=2     # fields 무죄
-OR(배당 or 무상증자)       : OK total=35 docs=3     # OR 무죄(합집합 정상)
-→20240102 (366d)         : OK
-→20240401 (15m)          : FAIL  RequestEntityTooLarge
-→20240701 (18m)          : FAIL
-→20250101 (24m)          : FAIL
-```
-
-**권장 사용** — 직접 파싱 대신 클라이언트를 쓰면 위 4함정을 자동 회피한다:
-
-```python
-from ds_client import document_search   # newsscrap/ds_client.py
-# 2년 범위도 자동 2분할·병합 (RequestEntityTooLarge 회피)
-docs, total = document_search("securities.name:세진중공업 and (배당 or 무상증자)",
-                              date_from="20200101", date_to="20211231")
 ```

@@ -1,4 +1,66 @@
+<!-- 이 파일은 docs/reference/sync_from_gitbook.py로 생성합니다 (2026-11-25). 원문: https://help.deepsearch.com/dp/ — 산업 집계, 기업 주제(태그), 기업집단. 직접 고치지 말고, 레포 메모는 repo-memo 마커 안에 쓰세요. -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry -->
+# 산업
+
+## 산업 정보 조회&#x20;
+
+```
+GetAggregateIndustryInfo
+GetAggregateIndustryConsensus
+GetMarketSummaryInfoByIndustry
+```
+
+{% content-ref url="/pages/-M1yWKjenPU2uQf4E\_h0" %}
+[산업 정보 조회](https://help.deepsearch.com/dp/api/func/industry/industry.md)
+{% endcontent-ref %}
+
+## 기업 주제 조회&#x20;
+
+```
+FindEntityByTag
+GetEntityTags
+GetConditionalTagMetadata
+```
+
+{% content-ref url="/pages/-M1yVWL8OsmsUdAj93Mt" %}
+[기업 주제 조회](https://help.deepsearch.com/dp/api/func/industry/subject.md)
+{% endcontent-ref %}
+
+## 기업 집단 정보 조회 &#x20;
+
+```
+FindConglomerateByID
+FindConglomerateByName
+GetConglomerateMembers
+GetConglomerateFinancialStatements
+```
+
+{% content-ref url="/pages/-M1yWGAyQIwhnUcs5pXs" %}
+[기업 집단 정보 조회](https://help.deepsearch.com/dp/api/func/industry/group.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/industry -->
+# 산업 정보 조회
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-M27MpU4LWdGWyCpHrA4" %}
+[GetAggregateIndustryInfo](https://help.deepsearch.com/dp/api/func/industry/industry/getaggregateindustryinfo.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27Mx8P2yEXV8vw9e9C" %}
+[GetAggregateIndustryConsensus](https://help.deepsearch.com/dp/api/func/industry/industry/getaggregateindustryconsensus.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27MqfsnBfrp0Lgc7JU" %}
+[GetMarketSummaryInfoByIndustry](https://help.deepsearch.com/dp/api/func/industry/industry/getmarketsummaryinfobyindustry.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/industry/getaggregateindustryinfo -->
 # GetAggregateIndustryInfo
+
+산업분류별 포괄 정보를 조회한다.
 
 ### Function specification
 
@@ -39,7 +101,14 @@ DIC:013005	기호성 소비/기타 소비자 재화	616	30,256,780,984,000	1,508
 ...
 ```
 
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** 이 레포의 API 키로 예시를 호출하면 `NameError: UFunction 'GetAggregateIndustryInfo' is not defined`입니다. 현재 구독으로는 쓸 수 없는 함수로 보고, 분석에 쓰지 마세요.
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/industry/getaggregateindustryconsensus -->
 # GetAggregateIndustryConsensus
+
+산업별 컨센서스를 조회합니다.
 
 ### Function specification
 
@@ -143,7 +212,14 @@ g. Latest 값이 음수일 경우 growth 가 의미가 없기 때문에, 이 경
 \*주의사항\
 삼성전자나 현대차 같은 대기업의 경우 컨센서스가 연결 재무제표 기준으로 작성되고, 개별 재무제표의 컨센서스는 비어있는 경우가 많습니다. 따라서 가급적 csd\_ prefix 로 시작하는 연결 재무제표의 값을 사용해서 산업별 컨센서스를 만드시기를 권장 드립니다.
 
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** 이 레포의 API 키로 예시를 호출하면 `NameError: UFunction 'GetAggregateIndustryConsensus' is not defined`입니다. 현재 구독으로는 쓸 수 없는 함수로 보고, 분석에 쓰지 마세요.
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/industry/getmarketsummaryinfobyindustry -->
 # GetMarketSummaryInfoByIndustry
+
+산업별 기업개수, 시가총액 및 PER를 조회한다.
 
 ### Function specification
 
@@ -182,7 +258,164 @@ C108	12	1,156,303,738,860	27.62
 ...
 ```
 
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** 예시를 호출하면 서버 오류 `KeyError: industry_id`가 나서 동작하지 않습니다.
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/subject -->
+# 기업 주제 조회
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-M27Mr3Ss6z0gHjBlgXt" %}
+[FindEntityByTag](https://help.deepsearch.com/dp/api/func/industry/subject/findentitybytag.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27NPxR2vFpwm3qfmKA" %}
+[GetEntityTags](https://help.deepsearch.com/dp/api/func/industry/subject/getentitytags.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27MqDmS71EQZT3-09B" %}
+[GetConditionalTagMetadata](https://help.deepsearch.com/dp/api/func/industry/subject/getconditionaltagmetadata.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/subject/getconditionaltagmetadata -->
+# GetConditionalTagMetadata
+
+태그 메타 정보를 가지고 옵니다.
+
+### Tag
+
+다양한 검색 조건을 사전에 tag 형태로 등록해 두고, 해당 검색 조건에 만족하는 기업 리스트를 손쉽게 추출할 수 있도록 처리하거나, 혹은 특정 기업이 어떤 조건에 해당하는지를 관리합니다.
+
+tag 는 사용자가 추가할 수는 없으며, 사전에 정의된 tag 에 따라 해당 tag 에 해당하는 기업리스트를 받아오거나, 혹은 특정 기업이 해당하는 tag 가 무엇인지 조회하는 것이 가능합니다.
+
+### Function specification
+
+```
+GetConditionalTagMetadata(tag_uids=None, format=None)
+```
+
+###
+
+### Parameters
+
+| Parameter | Type   | Description                                                                   |
+| --------- | ------ | ----------------------------------------------------------------------------- |
+| tag\_uids | string | 특정 tag id 를 입력하여, 해당 tag 에 해당하는 정보를 가지고 옵니다. 입력하지 않으면 전체 tag 리스트를 모두 가지고 옵니다. |
+| format    |        |                                                                               |
+
+###
+
+### Examples
+
+```
+> GetConditionalTagMetadata(tag_uids=None, format=None)
+
+...
+tag_uid    category    name    expr    data
+7ed687707ad33e6601a3a49dbde09a29    기업/주제    4차산업혁명|빅데이터    "빅데이터" 관련 기업 in "KRI:*C*""KRI:*J*" 산업 기업 or "*빅데이터*" 사업 기업    score: 0,
+group: "주제/4차산업혁명/빅데이터
+...
+```
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/subject/findentitybytag -->
+# FindEntityByTag
+
+특정 태그 조건에 해당하는 기업 리스트를 조회합니다.
+
+### Function specification
+
+```
+FindEntityByTag(tag_uids, format=None)
+```
+
+###
+
+### Parameters
+
+| Parameter | Type   | Description |
+| --------- | ------ | ----------- |
+| tag\_uids | string | Tag ID      |
+| format    |        |             |
+
+###
+
+### Examples
+
+```
+> FindEntityByTag(tag_uids, format=None)
+
+...
+tag_uid    symbol    entity_name    category    name    expr    data
+7ed687707ad33e6601a3a49dbde09a29    KRX:000040    KR모터스    기업/주제    4차산업혁명|빅데이터    "빅데이터" 관련 기업 in "KRI:*C*""KRI:*J*" 산업 기업 or "*빅데이터*" 사업 기업    score: 0,
+group: "주제/4차산업혁명/빅데이터
+...
+```
+
+<!-- repo-memo:start -->
+> **[레포 검증 2026-11-25 — 공식 문서 아님]** `tag_uids`는 `GetEntityTags(기업)` 결과의 `tag_uid` 리스트입니다. 예: `FindEntityByTag(["058d927729c753defecbeaf38647f2c0"])` → 최대 10,000행(결과가 커서 파일 저장 권장).
+<!-- repo-memo:end -->
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/subject/getentitytags -->
+# GetEntityTags
+
+특정 기업과 관련된 태그 리스트를 가지고 온다. 이를 통하여 해당 기업이 관련된 주제 등을 정리하여 노출할 수 있다.
+
+### Function specification
+
+```
+GetEntityTags(entities)
+```
+
+###
+
+### Parameters
+
+| Parameter | Type           | Description |
+| --------- | -------------- | ----------- |
+| entities  | list of string | 기업 목록       |
+
+###
+
+### Examples
+
+```
+> GetEntityTags(["KRX:005930","KRX:000020"])
+
+...
+symbol    entity_name    tag_uid    category    name    expr    data
+KRX:005930    삼성전자    7ed687707ad33e6601a3a49dbde09a29    기업/주제    4차산업혁명|빅데이터    "빅데이터" 관련 기업 in "KRI:*C*""KRI:*J*" 산업 기업 or "*빅데이터*" 사업 기업    score: 0,
+group: "주제/4차산업혁명/빅데이터"
+...
+
+```
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/group -->
+# 기업 집단 정보 조회
+
+다음과 같은 함수를 사용할 수 있습니다.
+
+{% content-ref url="/pages/-M27NdWaGLfP5xZkRDEl" %}
+[FindConglomerateByID](https://help.deepsearch.com/dp/api/func/industry/group/findconglomeratebyid.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27NgkzHV56zH6WDQGH" %}
+[FindConglomerateByName](https://help.deepsearch.com/dp/api/func/industry/group/findconglomeratebyname.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27NheP58o4kqeSwGdP" %}
+[GetConglomerateMembers](https://help.deepsearch.com/dp/api/func/industry/group/getconglomeratemembers.md)
+{% endcontent-ref %}
+
+{% content-ref url="/pages/-M27NfrXV\_mK5WnXbSZz" %}
+[GetConglomerateFinancialStatements](https://help.deepsearch.com/dp/api/func/industry/group/getconglomerate.md)
+{% endcontent-ref %}
+
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/group/findconglomeratebyname -->
 # FindConglomerateByName
+
+이름으로 기업 집단을 검색한다.
 
 ### Function specification
 
@@ -211,7 +444,10 @@ CX9	삼성	Samsung	1986-11-28	임연숙	임연숙		054-727-6000	054-286-5203	379
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/group/findconglomeratebyid -->
 # FindConglomerateByID
+
+기업 집단 ID로 기업 집단을 검색한다.
 
 ### Function specification
 
@@ -239,7 +475,10 @@ conglomerate_id	name_ko	name_en	date_founded	owner	chairman	mission	tel	fax	zipc
 
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/group/getconglomeratemembers -->
 # GetConglomerateMembers
+
+특정 기업 집단에 속한 기업 정보를 조회한다.
 
 ### Function specification
 
@@ -327,7 +566,10 @@ fiscal_year	conglomerate_id	symbol	entity_name
 2019	511	NICE:M09094	삼우종합건축사사무소
 ```
 
+<!-- source: https://help.deepsearch.com/dp/api/func/industry/group/getconglomerate -->
 # GetConglomerateFinancialStatements
+
+특정 기업 집단의 재무정보를 조회합니다.
 
 ### Function specification
 
