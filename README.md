@@ -14,7 +14,7 @@ KRX 상장사가 언급된 뉴스, 증권사보고서, 공시/IR, 특허 문서�
 
 ### 2. skills/deepsearch - Claude 스킬
 DeepSearch API를 Claude에서 쓰기 위한 통합 스킬(문서검색, 기업재무, 스크리닝, 멀티스텝 분석).
-배포용 zip과 설치 안내는 [`dist/`](dist/INSTALL.md)에 있습니다.
+Claude Code에서 쓰는 방식이며, 설치 방법은 아래 "스킬 설치"를 참고하세요.
 
 ## 프로젝트 구조
 
@@ -27,9 +27,7 @@ deepsearch/
 │   ├── data/                   # 언론사 목록, 관심종목 서식
 │   └── tests/                  # ds_client 스모크 테스트
 ├── skills/
-│   ├── deepsearch/             # Claude 스킬 소스 (SKILL.md, references, scripts)
-│   └── build_zip.py            # 배포 zip 빌드
-├── dist/                       # 스킬 배포물 (deepsearch.zip, INSTALL.md)
+│   └── deepsearch/             # Claude 스킬 소스 (SKILL.md, references, scripts)
 ├── docs/
 │   ├── api_guide.html          # GitHub Pages
 │   └── reference/              # DeepSearch API 레퍼런스 문서
@@ -40,13 +38,19 @@ deepsearch/
 └── requirements.txt
 ```
 
-## 스킬 배포 zip 갱신
+## 스킬 설치 (Claude Code)
 
-`skills/deepsearch/`를 수정한 뒤 zip을 다시 만들어 함께 커밋합니다.
+이 레포를 클론하면 `/deepsearch` 커맨드(`.claude/commands/deepsearch.md`)를 바로 쓸 수 있습니다.
+다른 프로젝트에서 쓰려면 `skills/deepsearch/` 폴더를 해당 프로젝트의 `.claude/skills/deepsearch/`(또는 개인용 `~/.claude/skills/deepsearch/`)에 복사하세요.
+Claude Code에게 "이 레포의 deepsearch 스킬을 설치해줘"라고 요청해도 됩니다.
+
+프로젝트 루트에 `.env`를 만들고 DeepSearch API 키를 넣습니다(`.env`는 `.gitignore`에 추가).
 
 ```bash
-python skills/build_zip.py   # → dist/deepsearch.zip
+API_KEY=your_base64_encoded_api_key
 ```
+
+> Claude.ai 일반 채팅용 zip 업로드 방식은 더 이상 제공하지 않습니다(2026-11-25 제거, git 이력에서 복원 가능).
 
 ## 로컬 실행
 

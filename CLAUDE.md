@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KRX (Korea Exchange) listed company document search tool using the DeepSearch API. Searches news, research reports, disclosures/IR, and patents, then filters results to identify mentions of KRX-listed companies (KOSPI, KOSDAQ, KONEX).
 
-The repo also holds the DeepSearch Claude skill (`skills/deepsearch/`), distributed as `dist/deepsearch.zip`.
+The repo also holds the DeepSearch Claude skill (`skills/deepsearch/`), used via Claude Code (clone the repo or copy the folder into `.claude/skills/`; no zip distribution).
 
 ## Project Structure
 
@@ -19,9 +19,7 @@ deepsearch/
 │   ├── data/               # publishers_575.txt 등 (앱이 런타임에 읽음)
 │   └── tests/
 ├── skills/
-│   ├── deepsearch/         # 통합 스킬 소스 (유일한 스킬)
-│   └── build_zip.py        # → dist/deepsearch.zip
-├── dist/                   # 스킬 배포물 (zip은 build_zip.py로만 생성)
+│   └── deepsearch/         # 통합 스킬 소스 (유일한 스킬)
 ├── docs/
 │   ├── api_guide.html      # GitHub Pages (위치 고정)
 │   └── reference/          # DeepSearch API 레퍼런스 md
@@ -36,7 +34,7 @@ deepsearch/
 
 ## Skill
 
-- Source of truth: `skills/deepsearch/`. After changing it, run `python skills/build_zip.py` and commit `dist/deepsearch.zip` together.
+- Source of truth: `skills/deepsearch/`. No build step (zip distribution was removed 2026-11-25).
 - `.claude/commands/deepsearch.md` is a condensed copy of the skill for Claude Code in this repo; keep its paths pointing at `skills/deepsearch/`.
 
 ## Architecture (newsscrap)
