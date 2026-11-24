@@ -306,7 +306,7 @@ python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000 --years 20
 
 여러 회사 데이터는 **목록으로 한 번에** 받으세요(규칙 5).
 - 재무: `GetFinancialStatements([심볼 50개 정도], report_ids="Income", ...)` — 3개사 3년 손익이 약 900행·2초입니다. 수백 개사면 50개씩 나눠 호출하세요.
-- 주가: `GetStockPrices([...])`, 전 종목이면 종목을 생략합니다(4,300여 종목·3초). 일반법인만 남기려면 `GetStockSymbols()`의 `company_type_l1 == "1"`로 거르세요(ETF·ETN은 8). 우선주는 종목코드 끝자리가 0이 아닙니다.
+- 주가: `GetStockPrices([...])`, 전 종목이면 종목을 생략합니다(4,300여 종목·3초). 일반법인만 남기려면 `GetStockSymbols()`의 `company_type_l1`이 "1"(일반법인)·"2"(공기업: 한국전력·기업은행 등 8종목)인 것만 남기세요(ETF·ETN은 8). 우선주는 종목코드 끝자리가 0이 아닙니다.
 - **전체 상장사(수천 개사) 재무처럼 호출이 수십 회를 넘으면** 예상 호출 수와 시간을 먼저 알리고 진행 여부를 물으세요. 업종(`"건설" 산업 기업`)이나 조건(`매출 > X`)으로 대상을 줄이는 방법도 함께 제안하세요.
 
 ---
@@ -413,13 +413,14 @@ python ${CLAUDE_SKILL_DIR}/scripts/turnaround_screener.py profit 1000 --years 20
 | 기업 주제·집단 | `GetEntityTags`, `FindEntityByTag`, `GetConditionalTagMetadata`, `FindConglomerateByID`, `GetConglomerateFinancialStatements` | 테마 태그, 그룹 재무 |
 | 인물 | `FindPersonBio(name, birthday)` | 인물 경력 |
 | 이벤트 | `ComputePortfolioReturns`, `ComputeEventDayStockReturns` | 포트폴리오 수익률, 이벤트일 종목 수익률 |
-| 경제지표 | 한국은행 `QueryBankOfKoreaSeries*`, FRED `QueryFredSeries*`, IMF `GetImf*`, OECD `GetOecd*`, World Bank `QueryWorldBank*`, 딥서치 자체 `QueryDeepSearchOwn*` (시리즈 검색 `FindEntity("DataSeries", "검색어")`) | 거시 지표. **기간을 꼭 지정**하세요(전체 시계열은 수 MB) |
+| 경제지표 | 한국은행 `QueryBankOfKoreaSeries*`, FRED `QueryFredSeries*`, IMF `GetImf*`, OECD `GetOecd*`, World Bank `QueryWorldBank*`, 딥서치 자체 `QueryDeepSearchOwn*` | 거시 지표. **기간을 꼭 지정**하세요(전체 시계열은 수 MB). **한국은행 시리즈는 2024-03~04에서 멈춰 있습니다**(국고채·콜·CD, 시장 수급, 신용융자). 최신 미국 금리·환율·유가는 FRED. 시리즈 검색 `FindEntity("DataSeries", …)`는 모든 키워드가 0행입니다 |
 | 토픽 인사이트 (REST) | `query_api.py "/v1/topic-insight/insight?type=trending&section=economy&topicId={uid}&stream=false"` (`questions`도 있음) | 토픽 요약·질문. `topicId`는 `SearchTrendingTopics`의 `uid` |
 
 **쓰지 마세요** (현재 구독으로 안 되거나 고장, 2026-11-25 확인):
 - 미제공(`NameError: UFunction ... is not defined`): 채권 함수 전부, 통계청(KOSIS) 전부, 채권 이벤트, `GetDartCapitalChange`, `GetFundamentalsConsensusChange`, `GetAggregateIndustryInfo`, `GetAggregateIndustryConsensus`, `SearchFinancialStatementsAuditOpinion`
 - 서버 오류·타임아웃: `GetMarketSummaryInfoByIndustry`·`GetIndustryReturnsOnEventDates`·`GetCumulativeIndustryReturns`(`KeyError: industry_id`), `AnalyzePortfolioReturns`(AttributeError), `FindPeopleByBirthday`·`FindRichestShareholders`·`ComputeStockReturnCorrelationWith`(타임아웃), `SearchAnalystReports`(500 → 애널리스트 보고서는 `DocumentSearch(["research"],["company"],...)`)
 - compute 밖 API: DeepSearch v2 REST(`api-v2.deepsearch.com`), 해외기업(`/v2/companies`), 챗딥서치(`/note/v1`) — 이 키로 401
+- **데이터 자체가 없음:** 종목별 투자자 수급(외국인·기관·개인 순매수, 외국인보유비율), 공매도 거래·잔고, 대차잔고, 신용융자·신용비율, 프로그램매매, 지수선물(미결제약정·베이시스), ETF NAV·괴리율, 장중 분봉·틱·호가, NXT, 대량매매. 자연어 질의는 오류 없이 기업 개요 표를 돌려주니 데이터가 온 것으로 착각하지 마세요. 공매도 과열 지정·시장경보는 공시 검색으로, 블록딜은 뉴스 제목 검색으로 **사건만** 찾을 수 있습니다. 근거: 레포 `research/data_gaps/`
 
 이런 요청에는 "이 요청은 현재 DeepSearch 구독으로 조회할 수 없습니다(`{함수명}`: {이유}). 대신 {대안}으로 확인할 수 있습니다."라고 답하세요. 대안이 없으면 그렇다고 말하고 OpenDART 등 다른 출처를 제안하세요.
 

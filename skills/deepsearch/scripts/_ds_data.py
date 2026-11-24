@@ -47,13 +47,13 @@ def is_preferred(symbol):
 
 def stock_universe(api_key, markets=('KOSPI', 'KOSDAQ'), include_preferred=False):
     """
-    일반법인(company_type_l1='1') 종목 → {symbol: {'name', 'market'}}.
-    ETF·ETN 등(company_type_l1='8')은 빠진다. 현재 상장 종목 기준이라 과거 날짜에는 이후 상장폐지 종목이 없다.
+    일반법인·공기업(company_type_l1='1','2') 종목 → {symbol: {'name', 'market'}}.
+    ETF·ETN 등(company_type_l1='8')은 빠진다. '2'는 한국전력·기업은행·강원랜드 등 공기업 8종목이다. 현재 상장 종목 기준이라 과거 날짜에는 이후 상장폐지 종목이 없다.
     """
     wanted = {m.upper() for m in markets}
     out = {}
     for r in query_records(api_key, 'GetStockSymbols()', timeout=120):
-        if r.get('company_type_l1') != '1' or r.get('market') not in wanted:
+        if r.get('company_type_l1') not in ('1', '2') or r.get('market') not in wanted:
             continue
         if not include_preferred and is_preferred(r['symbol']):
             continue

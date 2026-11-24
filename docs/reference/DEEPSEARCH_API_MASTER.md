@@ -762,6 +762,8 @@ ComputeEventDayStockReturns(event_dates)            # 이벤트일 종목별 수
 
 compute 함수 중 사용 불가로 확인된 것: 채권 18개, 통계청 5개, 채권 이벤트 3개, `GetDartCapitalChange`, `GetFundamentalsConsensusChange`, `GetAggregateIndustryInfo`, `GetAggregateIndustryConsensus`, `SearchFinancialStatementsAuditOpinion` (모두 `NameError: UFunction ... is not defined`). 원문 파일에는 남겨 두고 각 페이지에 검증 메모를 붙였습니다.
 
+**데이터 자체가 없는 것:** 종목별 투자자 수급, 공매도, 대차, 신용융자, 프로그램매매, 지수선물, ETF NAV, 장중 분봉·틱·호가, NXT, 대량매매. 자연어 질의는 오류 없이 기업 개요 표로 빠지고, `GetStockPrices`의 허용 컬럼 15개에도 없습니다. 한국은행 시리즈(국고채·콜·CD, 시장 수급, 신용융자 잔고)는 2024-03~04에서 멈춰 있습니다. 근거와 CHECK API 시나리오별 원데이터 대조: [research/data_gaps](../../research/data_gaps/README.md)
+
 ---
 
 ## 17. 전체 함수 목록과 호출 결과

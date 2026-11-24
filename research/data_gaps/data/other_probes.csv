@@ -1,0 +1,7 @@
+﻿확인,결과,내용
+지수 목록 (GetMarketIndexSymbols),11종,"코스피, 코스피 대형주, 코스피 중형주, 코스피 소형주, 코스피 200, 코스피 100, 코스피 50, 코스닥, 코스닥 대형주, 코스닥 중형주, 코스닥 소형주"
+채권 수익률 (GetBondYields),오류,NameError: UFunction 'GetBondYields' is not defined
+"시리즈 검색 FindEntity(""DataSeries"", ""실업률"")",0행,
+"시리즈 검색 FindEntity(""DataSeries"", ""신용융자"")",0행,
+"시리즈 검색 FindEntity(""DataSeries"", ""공매도"")",0행,
+"시리즈 검색 FindEntity(""DataSeries"", ""국고채"")",0행,

@@ -1,0 +1,16 @@
+﻿column,공매도·대차·신용·수급·NAV 관련
+open,False
+high,False
+low,False
+close,False
+volume,False
+value,False
+change,False
+change_rate,False
+shares_outstanding,False
+market_cap,False
+trading_halted,False
+after_market_close,False
+after_market_change,False
+after_market_change_rate,False
+after_market_volume,False
